@@ -1,37 +1,142 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { 
+  type Test, 
+  type InsertTest,
+  type TestRun,
+  type InsertTestRun,
+  type Schedule,
+  type InsertSchedule,
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 
-// modify the interface with any CRUD methods
-// you might need
-
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Test operations
+  getTest(id: string): Promise<Test | undefined>;
+  getAllTests(): Promise<Test[]>;
+  createTest(test: InsertTest): Promise<Test>;
+  updateTest(id: string, test: Partial<InsertTest>): Promise<Test | undefined>;
+  deleteTest(id: string): Promise<boolean>;
+
+  // Test run operations
+  getTestRun(id: string): Promise<TestRun | undefined>;
+  getTestRunsByTestId(testId: string): Promise<TestRun[]>;
+  getAllTestRuns(limit?: number): Promise<TestRun[]>;
+  createTestRun(testRun: InsertTestRun): Promise<TestRun>;
+  updateTestRun(id: string, testRun: Partial<InsertTestRun>): Promise<TestRun | undefined>;
+
+  // Schedule operations
+  getSchedule(id: string): Promise<Schedule | undefined>;
+  getSchedulesByTestId(testId: string): Promise<Schedule[]>;
+  getAllSchedules(): Promise<Schedule[]>;
+  createSchedule(schedule: InsertSchedule): Promise<Schedule>;
+  updateSchedule(id: string, schedule: Partial<InsertSchedule>): Promise<Schedule | undefined>;
+  deleteSchedule(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private tests: Map<string, Test>;
+  private testRuns: Map<string, TestRun>;
+  private schedules: Map<string, Schedule>;
 
   constructor() {
-    this.users = new Map();
+    this.tests = new Map();
+    this.testRuns = new Map();
+    this.schedules = new Map();
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  // Test operations
+  async getTest(id: string): Promise<Test | undefined> {
+    return this.tests.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getAllTests(): Promise<Test[]> {
+    return Array.from(this.tests.values());
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createTest(insertTest: InsertTest): Promise<Test> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const test: Test = { ...insertTest, id };
+    this.tests.set(id, test);
+    return test;
+  }
+
+  async updateTest(id: string, testUpdate: Partial<InsertTest>): Promise<Test | undefined> {
+    const existing = this.tests.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Test = { ...existing, ...testUpdate };
+    this.tests.set(id, updated);
+    return updated;
+  }
+
+  async deleteTest(id: string): Promise<boolean> {
+    return this.tests.delete(id);
+  }
+
+  // Test run operations
+  async getTestRun(id: string): Promise<TestRun | undefined> {
+    return this.testRuns.get(id);
+  }
+
+  async getTestRunsByTestId(testId: string): Promise<TestRun[]> {
+    return Array.from(this.testRuns.values())
+      .filter(run => run.testId === testId)
+      .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
+  }
+
+  async getAllTestRuns(limit?: number): Promise<TestRun[]> {
+    const runs = Array.from(this.testRuns.values())
+      .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
+    return limit ? runs.slice(0, limit) : runs;
+  }
+
+  async createTestRun(insertTestRun: InsertTestRun): Promise<TestRun> {
+    const id = randomUUID();
+    const testRun: TestRun = { ...insertTestRun, id };
+    this.testRuns.set(id, testRun);
+    return testRun;
+  }
+
+  async updateTestRun(id: string, testRunUpdate: Partial<InsertTestRun>): Promise<TestRun | undefined> {
+    const existing = this.testRuns.get(id);
+    if (!existing) return undefined;
+    
+    const updated: TestRun = { ...existing, ...testRunUpdate };
+    this.testRuns.set(id, updated);
+    return updated;
+  }
+
+  // Schedule operations
+  async getSchedule(id: string): Promise<Schedule | undefined> {
+    return this.schedules.get(id);
+  }
+
+  async getSchedulesByTestId(testId: string): Promise<Schedule[]> {
+    return Array.from(this.schedules.values())
+      .filter(schedule => schedule.testId === testId);
+  }
+
+  async getAllSchedules(): Promise<Schedule[]> {
+    return Array.from(this.schedules.values());
+  }
+
+  async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
+    const id = randomUUID();
+    const schedule: Schedule = { ...insertSchedule, id };
+    this.schedules.set(id, schedule);
+    return schedule;
+  }
+
+  async updateSchedule(id: string, scheduleUpdate: Partial<InsertSchedule>): Promise<Schedule | undefined> {
+    const existing = this.schedules.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Schedule = { ...existing, ...scheduleUpdate };
+    this.schedules.set(id, updated);
+    return updated;
+  }
+
+  async deleteSchedule(id: string): Promise<boolean> {
+    return this.schedules.delete(id);
   }
 }
 
