@@ -3,8 +3,30 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
+  const { toast } = useToast();
+  const [appUrl, setAppUrl] = useState('https://app.algopilotx.com');
+  const [apiEndpoint, setApiEndpoint] = useState('');
+  const [email, setEmail] = useState('');
+  const [webhook, setWebhook] = useState('');
+
+  const handleSaveAppSettings = () => {
+    toast({
+      title: "Settings saved",
+      description: "Application settings have been updated.",
+    });
+  };
+
+  const handleSaveNotifications = () => {
+    toast({
+      title: "Settings saved",
+      description: "Notification settings have been updated.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,7 +47,8 @@ export default function Settings() {
                 <Input
                   id="app-url"
                   type="url"
-                  defaultValue="https://app.algopilotx.com"
+                  value={appUrl}
+                  onChange={(e) => setAppUrl(e.target.value)}
                   data-testid="input-app-url"
                 />
               </div>
@@ -35,10 +58,14 @@ export default function Settings() {
                   id="api-endpoint"
                   type="url"
                   placeholder="https://api.algopilotx.com"
+                  value={apiEndpoint}
+                  onChange={(e) => setApiEndpoint(e.target.value)}
                   data-testid="input-api-endpoint"
                 />
               </div>
-              <Button data-testid="button-save-app-settings">Save Changes</Button>
+              <Button onClick={handleSaveAppSettings} data-testid="button-save-app-settings">
+                Save Changes
+              </Button>
             </CardContent>
           </Card>
 
@@ -54,6 +81,8 @@ export default function Settings() {
                   id="email"
                   type="email"
                   placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   data-testid="input-notification-email"
                 />
               </div>
@@ -63,10 +92,14 @@ export default function Settings() {
                   id="webhook"
                   type="url"
                   placeholder="https://hooks.slack.com/..."
+                  value={webhook}
+                  onChange={(e) => setWebhook(e.target.value)}
                   data-testid="input-webhook-url"
                 />
               </div>
-              <Button data-testid="button-save-notification-settings">Save Changes</Button>
+              <Button onClick={handleSaveNotifications} data-testid="button-save-notification-settings">
+                Save Changes
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -1,31 +1,40 @@
 import TestRunnerDisplay from "@/components/TestRunnerDisplay";
 import { useState, useEffect } from "react";
+import { wsClient } from "@/lib/websocket";
 
 export default function TestRunner() {
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState<string[]>([
-    '[10:30:45] Starting test suite: Authentication',
-    '[10:30:46] Running test: Login with valid credentials',
-    '[10:30:47] ✓ User navigated to login page',
-  ]);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [currentTest, setCurrentTest] = useState<string>('Waiting for test execution...');
 
-  // Simulate test progress - todo: remove mock functionality
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) return 0;
-        return prev + 5;
-      });
+    wsClient.connect();
 
-      if (Math.random() > 0.7) {
-        const newLog = `[${new Date().toLocaleTimeString()}] ${
-          ['✓ Test step completed', '⚠ Warning detected', 'ℹ Info message'][Math.floor(Math.random() * 3)]
-        }`;
-        setLogs((prev) => [...prev, newLog].slice(-20));
-      }
-    }, 1000);
+    const handleLog = (data: any) => {
+      setLogs((prev) => [...prev, data.message].slice(-50));
+    };
 
-    return () => clearInterval(interval);
+    const handleProgress = (data: any) => {
+      setProgress(data.progress);
+    };
+
+    const handleComplete = (data: any) => {
+      setLogs((prev) => [
+        ...prev,
+        data.success ? '✓ Test completed successfully' : '✗ Test failed',
+      ]);
+      setProgress(100);
+    };
+
+    wsClient.on('log', handleLog);
+    wsClient.on('progress', handleProgress);
+    wsClient.on('complete', handleComplete);
+
+    return () => {
+      wsClient.off('log', handleLog);
+      wsClient.off('progress', handleProgress);
+      wsClient.off('complete', handleComplete);
+    };
   }, []);
 
   return (
@@ -36,7 +45,7 @@ export default function TestRunner() {
       </div>
 
       <TestRunnerDisplay
-        currentTest="Login with invalid credentials"
+        currentTest={currentTest}
         progress={progress}
         logs={logs}
         onPause={() => console.log('Pause clicked')}
