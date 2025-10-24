@@ -54,7 +54,12 @@ export class MemStorage implements IStorage {
 
   async createTest(insertTest: InsertTest): Promise<Test> {
     const id = randomUUID();
-    const test: Test = { ...insertTest, id };
+    const test: Test = { 
+      ...insertTest, 
+      id,
+      headless: insertTest.headless ?? true,
+      screenshotOnFail: insertTest.screenshotOnFail ?? true,
+    };
     this.tests.set(id, test);
     return test;
   }
@@ -91,7 +96,15 @@ export class MemStorage implements IStorage {
 
   async createTestRun(insertTestRun: InsertTestRun): Promise<TestRun> {
     const id = randomUUID();
-    const testRun: TestRun = { ...insertTestRun, id };
+    const testRun: TestRun = { 
+      ...insertTestRun, 
+      id,
+      duration: insertTestRun.duration ?? null,
+      completedAt: insertTestRun.completedAt ?? null,
+      logs: insertTestRun.logs ?? null,
+      screenshot: insertTestRun.screenshot ?? null,
+      errorMessage: insertTestRun.errorMessage ?? null,
+    };
     this.testRuns.set(id, testRun);
     return testRun;
   }
@@ -121,7 +134,11 @@ export class MemStorage implements IStorage {
 
   async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
     const id = randomUUID();
-    const schedule: Schedule = { ...insertSchedule, id };
+    const schedule: Schedule = { 
+      ...insertSchedule, 
+      id,
+      enabled: insertSchedule.enabled ?? true,
+    };
     this.schedules.set(id, schedule);
     return schedule;
   }
