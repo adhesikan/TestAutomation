@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { testExecutor } from "./test-executor";
+import { testScheduler } from "./scheduler";
 import { insertTestSchema, insertScheduleSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -167,7 +168,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/schedules', async (req, res) => {
     try {
       const validatedData = insertScheduleSchema.parse(req.body);
+      
+      if (!testScheduler.isValidCronExpression(validatedData.cronExpression)) {
+        return res.status(400).json({ error: `Invalid cron expression: ${validatedData.cronExpression}` });
+      }
+      
       const schedule = await storage.createSchedule(validatedData);
+      
+      if (schedule.enabled) {
+        testScheduler.scheduleTest(schedule.id, schedule.testId, schedule.cronExpression);
+      }
+      
       res.status(201).json(schedule);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -177,10 +188,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/schedules/:id', async (req, res) => {
     try {
       const validatedData = insertScheduleSchema.partial().parse(req.body);
+      
+      if (validatedData.cronExpression && !testScheduler.isValidCronExpression(validatedData.cronExpression)) {
+        return res.status(400).json({ error: `Invalid cron expression: ${validatedData.cronExpression}` });
+      }
+      
       const schedule = await storage.updateSchedule(req.params.id, validatedData);
       if (!schedule) {
         return res.status(404).json({ error: 'Schedule not found' });
       }
+      
+      if (schedule.enabled) {
+        testScheduler.rescheduleTest(schedule.id, schedule.testId, schedule.cronExpression);
+      } else {
+        testScheduler.unscheduleTest(schedule.id);
+      }
+      
       res.json(schedule);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -189,6 +212,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/schedules/:id', async (req, res) => {
     try {
+      testScheduler.unscheduleTest(req.params.id);
+      
       const deleted = await storage.deleteSchedule(req.params.id);
       if (!deleted) {
         return res.status(404).json({ error: 'Schedule not found' });
