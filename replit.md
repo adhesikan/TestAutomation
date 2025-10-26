@@ -6,7 +6,7 @@ AlgoPilotX Test Monitor is a fully functional automated testing dashboard for mo
 
 The system uses Playwright for browser automation, supporting Chromium, Firefox, and WebKit browsers. Tests can be configured with custom scripts, scheduled using cron expressions, and monitored in real-time through WebSocket connections.
 
-**Current Status**: Fully implemented and operational with complete frontend-backend integration.
+**Current Status**: Fully implemented and operational with complete frontend-backend integration. All data persists in PostgreSQL database. Default theme is dark mode.
 
 ## User Preferences
 
@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
 
 **Routing**: Wouter for lightweight client-side routing with pages for Dashboard, Test Suites, Test Runner, and Settings.
 
-**Styling**: Tailwind CSS with custom design tokens for theming (light/dark mode support). Uses CSS variables for colors with HSL values and includes custom spacing units, border radius values, and elevation patterns.
+**Styling**: Tailwind CSS with custom design tokens for theming (light/dark mode support with dark as default). Uses CSS variables for colors with HSL values and includes custom spacing units, border radius values, and elevation patterns.
 
 **Real-time Updates**: WebSocket connection to `/ws` endpoint for receiving test execution logs, progress updates, and completion notifications. Custom WebSocket client (`client/src/lib/websocket.ts`) handles reconnection logic and event distribution.
 
@@ -113,20 +113,26 @@ Tests support a simple command-based scripting language:
 
 ## Recent Changes
 
-### October 26, 2025 - Database Migration & Test Editing
+### October 26, 2025 - Database Migration, Test Editing & Dark Theme
 
 **Migrated to PostgreSQL for Data Persistence**:
 - ✅ Replaced in-memory storage (MemStorage) with PostgreSQL database (DbStorage)
 - ✅ All tests, test runs, schedules now persist across server restarts
 - ✅ Screenshots stored as base64 in database for simplified deployment
 - ✅ Created database schema and pushed to development database
-- ✅ Configured Drizzle ORM with Neon serverless driver
+- ✅ Configured Drizzle ORM with Neon serverless driver (Pool + WebSocket for Node.js)
+- ✅ Fixed database connection for Node.js environment with `ws` library
 
 **Added Test Editing Functionality**:
 - ✅ New edit button (pencil icon) in Test Suites table
 - ✅ Edit dialog allows updating test configuration and scripts
 - ✅ Update mutation connected to backend PUT endpoint
 - ✅ Users can now modify existing tests without recreating them
+
+**Dark Theme as Default**:
+- ✅ Changed default theme from light to dark mode
+- ✅ Theme preference still persists in localStorage
+- ✅ Users can toggle between light and dark themes
 
 **Railway Deployment**:
 - ✅ Successfully deployed to Railway with full Playwright support
