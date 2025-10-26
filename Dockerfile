@@ -44,8 +44,8 @@ RUN NODE_ENV=production npm run build
 # Install Playwright browsers
 RUN npx playwright install chromium firefox webkit
 
-# Remove dev dependencies after build to reduce image size
-RUN npm prune --production
+# Keep all dependencies - vite is needed at runtime to serve the frontend
+# (npm prune --production would remove vite which is required)
 
 # Expose port
 EXPOSE 5000
