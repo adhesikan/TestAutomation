@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import TestSuites from "@/pages/TestSuites";
 import TestRunner from "@/pages/TestRunner";
 import Settings from "@/pages/Settings";
+import Guide from "@/pages/Guide";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/test-suites" component={TestSuites} />
       <Route path="/test-runner" component={TestRunner} />
+      <Route path="/guide" component={Guide} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

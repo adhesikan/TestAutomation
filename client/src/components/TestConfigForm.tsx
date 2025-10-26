@@ -11,7 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
+import { FileCode, Info } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { parsePlaywrightScript } from "@/lib/playwrightParser";
 
 interface TestConfig {
   name: string;
@@ -37,13 +42,44 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
     screenshotOnFail: initialConfig?.screenshotOnFail ?? true,
     testScript: initialConfig?.testScript || '',
   });
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [playwrightScript, setPlaywrightScript] = useState('');
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave?.(config);
   };
 
+  const handleImportPlaywright = () => {
+    try {
+      const parsed = parsePlaywrightScript(playwrightScript);
+      setConfig({ ...config, testScript: parsed.script, url: parsed.url || config.url });
+      setShowImportDialog(false);
+      setPlaywrightScript('');
+      
+      if (parsed.warnings && parsed.warnings.length > 0) {
+        toast({
+          title: "Script imported with warnings",
+          description: `Converted successfully, but ${parsed.warnings.length} warning(s) found. Please review the script.`,
+        });
+      } else {
+        toast({
+          title: "Script imported",
+          description: "Playwright script has been converted successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Import failed",
+        description: error instanceof Error ? error.message : "Failed to parse Playwright script",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
+    <>
     <Card data-testid="card-test-config">
       <CardHeader>
         <CardTitle>Test Configuration</CardTitle>
@@ -91,15 +127,33 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="test-script">Test Script</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="test-script">Test Script</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowImportDialog(true)}
+                data-testid="button-import-script"
+              >
+                <FileCode className="h-4 w-4 mr-2" />
+                Import from Codegen
+              </Button>
+            </div>
             <Textarea
               id="test-script"
-              placeholder="Enter your test script or selectors..."
+              placeholder="Enter your test script or click 'Import from Codegen' to paste a Playwright script..."
               className="font-mono text-sm min-h-32"
               value={config.testScript}
               onChange={(e) => setConfig({ ...config, testScript: e.target.value })}
               data-testid="input-test-script"
             />
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Simple format: <code className="bg-muted px-1 rounded">click [selector]</code>, <code className="bg-muted px-1 rounded">type [selector] "text"</code>, <code className="bg-muted px-1 rounded">expect [selector]</code>, <code className="bg-muted px-1 rounded">wait 1000</code>, <code className="bg-muted px-1 rounded">goto [url]</code>
+              </AlertDescription>
+            </Alert>
           </div>
 
           <div className="space-y-3">
@@ -144,5 +198,49 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
         </form>
       </CardContent>
     </Card>
+
+    {showImportDialog && (
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Import Playwright Script</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>How to generate a Playwright script:</strong>
+                <ol className="list-decimal list-inside mt-2 space-y-1">
+                  <li>On your local machine, run: <code className="bg-muted px-1 rounded">npx playwright codegen https://your-url.com</code></li>
+                  <li>Perform your test actions in the opened browser</li>
+                  <li>Copy the generated test code from the Playwright Inspector</li>
+                  <li>Paste it below and click "Import"</li>
+                </ol>
+              </AlertDescription>
+            </Alert>
+            <div className="space-y-2">
+              <Label htmlFor="playwright-script">Paste Playwright Test Code</Label>
+              <Textarea
+                id="playwright-script"
+                placeholder="Paste your Playwright test code here..."
+                className="font-mono text-sm min-h-80"
+                value={playwrightScript}
+                onChange={(e) => setPlaywrightScript(e.target.value)}
+                data-testid="textarea-playwright-import"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleImportPlaywright} data-testid="button-confirm-import">
+                Import & Convert
+              </Button>
+              <Button variant="outline" onClick={() => setShowImportDialog(false)} data-testid="button-cancel-import">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   );
 }

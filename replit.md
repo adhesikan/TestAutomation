@@ -2,11 +2,7 @@
 
 ## Overview
 
-AlgoPilotX Test Monitor is a fully functional automated testing dashboard for monitoring and executing browser-based tests against app.algopilotx.com. The application provides real-time test execution, scheduling capabilities, and comprehensive test result tracking with visual analytics.
-
-The system uses Playwright for browser automation, supporting Chromium, Firefox, and WebKit browsers. Tests can be configured with custom scripts, scheduled using cron expressions, and monitored in real-time through WebSocket connections.
-
-**Current Status**: Fully implemented and operational with complete frontend-backend integration. All data persists in PostgreSQL database. Default theme is dark mode.
+AlgoPilotX Test Monitor is an automated testing dashboard for monitoring and executing browser-based tests against `app.algopilotx.com`. It provides real-time test execution, scheduling capabilities, and comprehensive test result tracking with visual analytics. The system uses Playwright for browser automation across Chromium, Firefox, and WebKit, allowing custom scripts, cron-scheduled tests, and real-time monitoring via WebSockets. The project is fully operational with complete frontend-backend integration and persists all data in a PostgreSQL database, with a dark mode as the default theme.
 
 ## User Preferences
 
@@ -16,202 +12,39 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework**: React with TypeScript using Vite as the build tool
-
-**UI Component System**: Radix UI primitives with shadcn/ui styling patterns following Material Design principles with the "new-york" style variant. The design emphasizes clarity, scannability, and status-driven interfaces suitable for data-dense testing dashboards.
-
-**Typography**: Inter font for UI elements and JetBrains Mono for code/logs, with a structured hierarchy from page titles (text-3xl) down to captions (text-xs).
-
-**State Management**: TanStack Query (React Query) for server state management with custom query client configured for API requests. WebSocket client for real-time test execution updates.
-
-**Routing**: Wouter for lightweight client-side routing with pages for Dashboard, Test Suites, Test Runner, and Settings.
-
-**Styling**: Tailwind CSS with custom design tokens for theming (light/dark mode support with dark as default). Uses CSS variables for colors with HSL values and includes custom spacing units, border radius values, and elevation patterns.
-
-**Real-time Updates**: WebSocket connection to `/ws` endpoint for receiving test execution logs, progress updates, and completion notifications. Custom WebSocket client (`client/src/lib/websocket.ts`) handles reconnection logic and event distribution.
+**Framework**: React with TypeScript (Vite).
+**UI/UX**: Radix UI primitives with shadcn/ui styling, following Material Design principles ("new-york" style variant). Emphasizes clarity and scannability for data-dense dashboards.
+**Typography**: Inter (UI) and JetBrains Mono (code/logs), with a structured hierarchy.
+**State Management**: TanStack Query (React Query) for server state; WebSocket client for real-time updates.
+**Routing**: Wouter for client-side routing (Dashboard, Test Suites, Test Runner, Settings).
+**Styling**: Tailwind CSS with custom design tokens for theming (dark mode default, light mode support).
+**Real-time Updates**: WebSocket connection to `/ws` for test execution logs, progress, and completion.
 
 ### Backend Architecture
 
-**Runtime**: Node.js with Express server
-
-**Language**: TypeScript with ES modules
-
-**API Structure**: RESTful API endpoints under `/api` prefix:
-- `/api/tests` - CRUD operations for test configurations
-- `/api/test-runs` - Test execution history and results
-- `/api/schedules` - Test scheduling management with cron validation
-- `/api/stats` - Dashboard statistics and metrics
-
-**WebSocket Server**: ws library integrated with HTTP server on `/ws` path for real-time test execution communication using event-driven architecture. Broadcasts log, progress, and completion events to connected clients.
-
-**Test Execution**: Playwright-based test executor (`server/test-executor.ts`) running browser automation with support for:
-- Multiple browsers (Chromium, Firefox, WebKit)
-- Headless/headed modes
-- Screenshot capture on failures
-- Progress tracking and logging
-- Asynchronous execution with event emitters
-- Simple script commands: click, type, wait, expect, goto
-
-**Scheduler**: node-cron based scheduling system (`server/scheduler.ts`) that validates cron expressions and manages scheduled test runs. Initializes on server startup with persisted schedules. Validates cron expressions before creating/updating schedules to prevent invalid entries.
-
-**Storage Interface**: Abstract `IStorage` interface with in-memory implementation (`MemStorage`) for rapid prototyping. All data operations go through this interface for tests, test runs, and schedules. Ready for migration to persistent database when needed.
+**Runtime**: Node.js with Express server (TypeScript, ES modules).
+**API Structure**: RESTful API under `/api` for tests, test runs, schedules, and stats.
+**WebSocket Server**: `ws` library integrated with HTTP server on `/ws` for real-time test execution communication (event-driven architecture).
+**Test Execution**: Playwright-based executor (`server/test-executor.ts`) supporting multiple browsers (Chromium, Firefox, WebKit), headless/headed modes, screenshot capture on failures, and simple script commands (click, type, wait, expect, goto).
+**Scheduler**: `node-cron` based system (`server/scheduler.ts`) for managing scheduled test runs with cron expression validation.
+**Storage Interface**: Abstract `IStorage` interface, implemented with PostgreSQL.
 
 ### Data Storage Solutions
 
-**Current Implementation**: PostgreSQL database with Drizzle ORM for persistent data storage.
-
-**Schema Definition**: Drizzle ORM schema defined in `shared/schema.ts`:
-
-- `tests` table - Test configurations (name, URL, browser, headless mode, screenshot settings, test scripts)
-- `test_runs` table - Execution history (status, duration, timestamps, logs, screenshots as base64, errors)
-- `schedules` table - Scheduled test runs (cron expressions, enabled state)
-- `users` table - User authentication (currently unused, reserved for future multi-user support)
-
-**Database Connection**: 
-- Connects via `DATABASE_URL` environment variable
-- Uses Neon serverless PostgreSQL driver (@neondatabase/serverless)
-- Schema migrations handled by `npm run db:push` command
-- Storage interface abstraction (`IStorage`) allows easy database provider swaps
-
-**Screenshot Storage**: Failure screenshots are captured as PNG images, converted to base64 strings, and stored directly in the `test_runs.screenshot` column. This eliminates the need for separate file storage and simplifies deployment.
+**Database**: PostgreSQL with Drizzle ORM.
+**Schema**: Defined in `shared/schema.ts`, includes `tests`, `test_runs`, `schedules`, and `users` (reserved).
+**Connection**: Via `DATABASE_URL` environment variable using `@neondatabase/serverless` driver. Migrations handled by `npm run db:push`.
+**Screenshot Storage**: Failure screenshots are captured as base64 strings and stored directly in `test_runs.screenshot` column.
 
 ### Test Script Language
 
-Tests support a simple command-based scripting language:
-- `click <selector>` - Click an element
-- `type <selector> "text"` - Fill input field
-- `wait <milliseconds>` - Wait for duration
-- `expect <selector>` - Wait for element to appear
-- `goto <url>` - Navigate to URL
+Supports a simple command-based scripting language for browser automation: `click <selector>`, `type <selector> "text"`, `wait <milliseconds>`, `expect <selector>`, `goto <url>`. Includes a Playwright parser to convert Codegen output to this simple format.
 
-### External Dependencies
+## External Dependencies
 
-**Browser Automation**: Playwright library for cross-browser testing with support for Chromium, Firefox, and WebKit engines.
-
-**Scheduling**: node-cron for cron-based test scheduling with expression validation
-
-**Database**: 
-- Drizzle ORM as the database toolkit
-- @neondatabase/serverless for PostgreSQL connection (when database is created)
-- connect-pg-simple for PostgreSQL session store (for future authentication)
-
-**UI Component Libraries**:
-- @radix-ui/* components (18+ component packages) for accessible UI primitives
-- Recharts for data visualization (line charts, cartesian grids)
-- Lucide React for icons
-
-**WebSocket**: ws library for real-time communication
-
-**Utilities**:
-- date-fns for date manipulation
-- zod for schema validation
-- class-variance-authority and clsx for conditional styling
-
-**Development Tools**:
-- @replit/vite-plugin-runtime-error-modal for error overlays
-- esbuild for server bundling
-
-## Recent Changes
-
-### October 26, 2025 - Database Migration, Test Editing & Dark Theme
-
-**Migrated to PostgreSQL for Data Persistence**:
-- ✅ Replaced in-memory storage (MemStorage) with PostgreSQL database (DbStorage)
-- ✅ All tests, test runs, schedules now persist across server restarts
-- ✅ Screenshots stored as base64 in database for simplified deployment
-- ✅ Created database schema and pushed to development database
-- ✅ Configured Drizzle ORM with Neon serverless driver (Pool + WebSocket for Node.js)
-- ✅ Fixed database connection for Node.js environment with `ws` library
-
-**Added Test Editing Functionality**:
-- ✅ New edit button (pencil icon) in Test Suites table
-- ✅ Edit dialog allows updating test configuration and scripts
-- ✅ Update mutation connected to backend PUT endpoint
-- ✅ Users can now modify existing tests without recreating them
-
-**Dark Theme as Default**:
-- ✅ Changed default theme from light to dark mode
-- ✅ Theme preference still persists in localStorage
-- ✅ Users can toggle between light and dark themes
-
-**Railway Deployment**:
-- ✅ Successfully deployed to Railway with full Playwright support
-- ✅ All Playwright browsers (Chromium, Firefox, WebKit) working correctly
-- ✅ Tests execute successfully with real browser automation
-- ✅ WebSocket live updates working in production
-- ✅ Updated DEPLOYMENT.md with PostgreSQL setup instructions
-
-### October 26, 2025 - Enhanced Test Details & Logging
-
-**Implemented Test Details Dialog**:
-- ✅ Created comprehensive TestDetailsDialog component with three tabs:
-  - Configuration tab showing test settings (URL, browser, mode, screenshot options)
-  - Test Script tab displaying the test script in a scrollable code viewer
-  - Latest Results tab showing execution logs, error messages, status, and timing
-- ✅ Connected eye button in Test Suites to open the details dialog
-- ✅ Added automatic refetching (2-second interval) to ensure dialog shows latest test run results
-
-**Improved Test Runner Display**:
-- ✅ Fixed Test Runner to display latest test run logs when no active execution is happening
-- ✅ Eliminated "Waiting for test execution..." dead state
-- ✅ Implemented smart switching between live WebSocket updates and historical run display
-- ✅ Shows test name, progress, and complete logs from most recent completed test
-
-**Environment Limitation Communication**:
-- ✅ Added informational alert in TestDetailsDialog when Playwright dependency errors are detected
-- ✅ Clear explanation that tests cannot run in Replit due to missing system libraries
-- ✅ Reassures users that their test configuration is correct and will work when deployed
-
-**Query Cache Management**:
-- ✅ Enhanced cache invalidation to refresh both global test runs and per-test run queries
-- ✅ Ensured UI updates immediately after test execution completes
-
-### October 24, 2025 - Initial Implementation
-
-**Complete Implementation**:
-- ✅ Defined comprehensive data models for tests, test runs, and schedules
-- ✅ Implemented full storage interface with in-memory backing
-- ✅ Created Playwright-based test executor with script parsing
-- ✅ Built RESTful API routes for all CRUD operations
-- ✅ Integrated WebSocket for real-time test execution updates
-- ✅ Connected frontend to backend APIs, removed all mock data
-- ✅ Implemented cron-based test scheduling with validation
-- ✅ Fixed critical schedule management bugs (cron validation, enable/disable toggle)
-
-**Key Features Delivered**:
-1. Dashboard with real-time metrics and test history
-2. Test suite management (create, run, delete tests)
-3. Live test runner with WebSocket-powered log streaming
-4. Configurable test scripts with browser automation
-5. Schedule management with cron expression validation
-6. Dark mode support throughout the application
-7. Comprehensive error handling and user feedback
-
-## Architecture Decisions
-
-**Why In-Memory Storage**: Chosen for rapid development and easy deployment. Can be replaced with PostgreSQL without changing application logic thanks to the storage interface abstraction.
-
-**Why Playwright**: Cross-browser support, modern API, excellent documentation, and active maintenance. Better than Puppeteer for multi-browser testing scenarios.
-
-**Why WebSocket**: Enables real-time streaming of test logs and progress updates, providing excellent user experience during test execution.
-
-**Why Simple Script Language**: Easier for users to write and understand compared to raw Playwright code. Extensible design allows adding new commands as needed.
-
-**Security Considerations**: 
-- Cron expressions validated before scheduling to prevent malformed entries
-- Test scripts run in isolated browser contexts
-- WebSocket connections automatically cleaned up on disconnect
-- API routes include error handling to prevent information leakage
-
-## Future Enhancements
-
-Potential improvements for future development:
-- Migrate to PostgreSQL for persistent storage
-- Add user authentication and multi-user support
-- Implement visual regression testing with screenshot comparison
-- Add performance metrics and load time monitoring
-- Create comprehensive test coverage reports
-- Email/Slack notifications for test failures
-- CI/CD pipeline integration
-- Test result history and trend analysis
-- Advanced test script editor with syntax highlighting
+**Browser Automation**: Playwright library.
+**Scheduling**: `node-cron`.
+**Database**: Drizzle ORM, `@neondatabase/serverless` (PostgreSQL), `connect-pg-simple`.
+**UI Component Libraries**: `@radix-ui/*`, Recharts, Lucide React.
+**WebSocket**: `ws` library.
+**Utilities**: `date-fns`, `zod`, `class-variance-authority`, `clsx`.
