@@ -1,0 +1,104 @@
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Node.js v20.19.5
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+/app/node_modules/pg-pool/index.js:45
+    Error.captureStackTrace(err)
+          ^
+error: relation "schedules" does not exist
+    at /app/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DbStorage.getAllSchedules (file:///app/dist/index.js:175:16)
+    at async TestScheduler.initialize (file:///app/dist/index.js:377:28)
+    at async file:///app/dist/index.js:791:3 {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '59',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Node.js v20.19.5
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+/app/node_modules/pg-pool/index.js:45
+    Error.captureStackTrace(err)
+          ^
+error: relation "schedules" does not exist
+    at /app/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DbStorage.getAllSchedules (file:///app/dist/index.js:175:16)
+    at async TestScheduler.initialize (file:///app/dist/index.js:377:28)
+    at async file:///app/dist/index.js:791:3 {
+  length: 108,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '59',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  routine: 'parserOpenTable'
+}
+Node.js v20.19.5
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+/app/node_modules/pg-pool/index.js:45
+  constraint: undefined,
+    Error.captureStackTrace(err)
+          ^
+  file: 'parse_relation.c',
+  line: '1449',
+  length: 108,
+error: relation "schedules" does not exist
+    at /app/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DbStorage.getAllSchedules (file:///app/dist/index.js:175:16)
+    at async TestScheduler.initialize (file:///app/dist/index.js:377:28)
+    at async file:///app/dist/index.js:791:3 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '59',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  routine: 'parserOpenTable'
+}
+Node.js v20.19.5
