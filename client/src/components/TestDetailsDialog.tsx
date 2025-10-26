@@ -30,6 +30,7 @@ export default function TestDetailsDialog({ test, open, onOpenChange }: TestDeta
       return response.json();
     },
     enabled: open,
+    refetchInterval: open ? 2000 : false,
   });
 
   const latestRun = testRuns[0];
