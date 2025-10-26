@@ -104,7 +104,34 @@ Tests support a simple command-based scripting language:
 - @replit/vite-plugin-runtime-error-modal for error overlays
 - esbuild for server bundling
 
-## Recent Changes (October 24, 2025)
+## Recent Changes
+
+### October 26, 2025 - Enhanced Test Details & Logging
+
+**Implemented Test Details Dialog**:
+- ✅ Created comprehensive TestDetailsDialog component with three tabs:
+  - Configuration tab showing test settings (URL, browser, mode, screenshot options)
+  - Test Script tab displaying the test script in a scrollable code viewer
+  - Latest Results tab showing execution logs, error messages, status, and timing
+- ✅ Connected eye button in Test Suites to open the details dialog
+- ✅ Added automatic refetching (2-second interval) to ensure dialog shows latest test run results
+
+**Improved Test Runner Display**:
+- ✅ Fixed Test Runner to display latest test run logs when no active execution is happening
+- ✅ Eliminated "Waiting for test execution..." dead state
+- ✅ Implemented smart switching between live WebSocket updates and historical run display
+- ✅ Shows test name, progress, and complete logs from most recent completed test
+
+**Environment Limitation Communication**:
+- ✅ Added informational alert in TestDetailsDialog when Playwright dependency errors are detected
+- ✅ Clear explanation that tests cannot run in Replit due to missing system libraries
+- ✅ Reassures users that their test configuration is correct and will work when deployed
+
+**Query Cache Management**:
+- ✅ Enhanced cache invalidation to refresh both global test runs and per-test run queries
+- ✅ Ensured UI updates immediately after test execution completes
+
+### October 24, 2025 - Initial Implementation
 
 **Complete Implementation**:
 - ✅ Defined comprehensive data models for tests, test runs, and schedules
