@@ -28,12 +28,24 @@ Railway automatically detects and deploys Docker applications.
    - Choose "Deploy from GitHub repo"
    - Select your repository
    - Railway will automatically detect the Dockerfile and deploy
-   - Your app will be live at a Railway URL (e.g., `your-app.up.railway.app`)
 
-3. **Configure Environment Variables (if needed):**
+3. **Configure Railway Settings:**
+   
+   After deployment, you need to generate a public URL:
+   
+   - In Railway dashboard, click on your deployed service
+   - Go to the **Settings** tab
+   - Scroll to **Networking** section
+   - Click **Generate Domain** button
+   - Railway will assign you a public URL (e.g., `your-app.up.railway.app`)
+   - Wait 30-60 seconds for the domain to provision
+   - Visit your URL!
+
+4. **Configure Environment Variables (if needed):**
    - In Railway dashboard, go to your project
    - Click "Variables" tab
    - Add any environment variables (like `SESSION_SECRET`)
+   - Railway automatically sets `PORT` for you (don't set it manually)
 
 **That's it!** Your tests will now run properly with full Playwright support.
 
