@@ -12,6 +12,12 @@ export default function TestRunner() {
 
     const handleLog = (data: any) => {
       setLogs((prev) => [...prev, data.message].slice(-50));
+      
+      const startTestMatch = data.message.match(/\[.+?\] Starting test: (.+)/);
+      if (startTestMatch) {
+        setCurrentTest(startTestMatch[1]);
+        setProgress(0);
+      }
     };
 
     const handleProgress = (data: any) => {
@@ -24,6 +30,10 @@ export default function TestRunner() {
         data.success ? '✓ Test completed successfully' : '✗ Test failed',
       ]);
       setProgress(100);
+      setTimeout(() => {
+        setCurrentTest('Waiting for test execution...');
+        setProgress(0);
+      }, 3000);
     };
 
     wsClient.on('log', handleLog);

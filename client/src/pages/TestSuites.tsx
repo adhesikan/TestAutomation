@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import TestStatusBadge from "@/components/TestStatusBadge";
+import TestRunStatus from "@/components/TestRunStatus";
 import { Play, Eye, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,12 +59,13 @@ export default function TestSuites() {
     mutationFn: async (testId: string) => {
       return await apiRequest('POST', `/api/tests/${testId}/run`);
     },
-    onSuccess: () => {
+    onSuccess: (_, testId) => {
       toast({
         title: "Test started",
         description: "Test execution has been started.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/test-runs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tests', testId, 'runs'] });
     },
   });
 
@@ -125,6 +127,7 @@ export default function TestSuites() {
                 <TableHead>URL</TableHead>
                 <TableHead>Browser</TableHead>
                 <TableHead>Mode</TableHead>
+                <TableHead>Last Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -134,8 +137,11 @@ export default function TestSuites() {
                   <TableCell className="font-medium">{test.name}</TableCell>
                   <TableCell className="text-muted-foreground max-w-xs truncate">{test.url}</TableCell>
                   <TableCell className="text-muted-foreground capitalize">{test.browser}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {test.headless ? 'Headless' : 'Headed'}
+                  </TableCell>
                   <TableCell>
-                    <TestStatusBadge status={test.headless ? 'scheduled' : 'skipped'} />
+                    <TestRunStatus testId={test.id} />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
