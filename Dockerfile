@@ -38,8 +38,8 @@ RUN npm ci
 # Copy application files
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with production environment
+RUN NODE_ENV=production npm run build
 
 # Install Playwright browsers
 RUN npx playwright install chromium firefox webkit
