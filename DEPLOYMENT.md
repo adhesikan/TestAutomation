@@ -41,7 +41,16 @@ Railway automatically detects and deploys Docker applications.
    - Wait 30-60 seconds for the domain to provision
    - Visit your URL!
 
-4. **Configure Environment Variables (if needed):**
+4. **Add PostgreSQL Database (Required):**
+   
+   Your app needs a database to persist tests and results:
+   
+   - In Railway dashboard, click **"New"** → **"Database"** → **"Add PostgreSQL"**
+   - Railway will automatically create a `DATABASE_URL` environment variable
+   - Your app will automatically connect to the database
+   - **No additional configuration needed!**
+
+5. **Configure Additional Environment Variables (if needed):**
    - In Railway dashboard, go to your project
    - Click "Variables" tab
    - Add any environment variables (like `SESSION_SECRET`)
@@ -85,7 +94,17 @@ The `Dockerfile` handles everything:
 1. ✅ Installs all system dependencies for Playwright
 2. ✅ Downloads Chromium, Firefox, and WebKit browsers
 3. ✅ Builds your application
-4. ✅ Starts the server on port 5000
+4. ✅ Connects to PostgreSQL database for data persistence
+5. ✅ Starts the server on port 5000
+
+## Data Persistence
+
+All your test configurations, test runs, and screenshots are stored in the PostgreSQL database:
+
+- **Test Configurations** - Saved permanently, survive server restarts
+- **Test Results** - Complete execution history with logs
+- **Screenshots** - Failure screenshots stored as base64 in database
+- **Schedules** - Cron-based test schedules persist across restarts
 
 ---
 

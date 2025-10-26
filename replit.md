@@ -58,15 +58,22 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage Solutions
 
-**Current Implementation**: In-memory storage using Map structures for development and testing.
+**Current Implementation**: PostgreSQL database with Drizzle ORM for persistent data storage.
 
-**Schema Definition**: Drizzle ORM schema defined in `shared/schema.ts` with PostgreSQL dialect configuration:
+**Schema Definition**: Drizzle ORM schema defined in `shared/schema.ts`:
 
 - `tests` table - Test configurations (name, URL, browser, headless mode, screenshot settings, test scripts)
-- `test_runs` table - Execution history (status, duration, timestamps, logs, screenshots, errors)
+- `test_runs` table - Execution history (status, duration, timestamps, logs, screenshots as base64, errors)
 - `schedules` table - Scheduled test runs (cron expressions, enabled state)
+- `users` table - User authentication (currently unused, reserved for future multi-user support)
 
-**Migration Path**: Drizzle Kit configured for PostgreSQL migrations. Database URL expected via `DATABASE_URL` environment variable. Can easily switch from MemStorage to database-backed storage.
+**Database Connection**: 
+- Connects via `DATABASE_URL` environment variable
+- Uses Neon serverless PostgreSQL driver (@neondatabase/serverless)
+- Schema migrations handled by `npm run db:push` command
+- Storage interface abstraction (`IStorage`) allows easy database provider swaps
+
+**Screenshot Storage**: Failure screenshots are captured as PNG images, converted to base64 strings, and stored directly in the `test_runs.screenshot` column. This eliminates the need for separate file storage and simplifies deployment.
 
 ### Test Script Language
 
@@ -105,6 +112,28 @@ Tests support a simple command-based scripting language:
 - esbuild for server bundling
 
 ## Recent Changes
+
+### October 26, 2025 - Database Migration & Test Editing
+
+**Migrated to PostgreSQL for Data Persistence**:
+- ✅ Replaced in-memory storage (MemStorage) with PostgreSQL database (DbStorage)
+- ✅ All tests, test runs, schedules now persist across server restarts
+- ✅ Screenshots stored as base64 in database for simplified deployment
+- ✅ Created database schema and pushed to development database
+- ✅ Configured Drizzle ORM with Neon serverless driver
+
+**Added Test Editing Functionality**:
+- ✅ New edit button (pencil icon) in Test Suites table
+- ✅ Edit dialog allows updating test configuration and scripts
+- ✅ Update mutation connected to backend PUT endpoint
+- ✅ Users can now modify existing tests without recreating them
+
+**Railway Deployment**:
+- ✅ Successfully deployed to Railway with full Playwright support
+- ✅ All Playwright browsers (Chromium, Firefox, WebKit) working correctly
+- ✅ Tests execute successfully with real browser automation
+- ✅ WebSocket live updates working in production
+- ✅ Updated DEPLOYMENT.md with PostgreSQL setup instructions
 
 ### October 26, 2025 - Enhanced Test Details & Logging
 

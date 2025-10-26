@@ -5,8 +5,13 @@ import {
   type InsertTestRun,
   type Schedule,
   type InsertSchedule,
+  tests,
+  testRuns,
+  schedules,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Test operations
@@ -157,4 +162,123 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DbStorage implements IStorage {
+  // Test operations
+  async getTest(id: string): Promise<Test | undefined> {
+    const result = await db.select().from(tests).where(eq(tests.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAllTests(): Promise<Test[]> {
+    return await db.select().from(tests);
+  }
+
+  async createTest(insertTest: InsertTest): Promise<Test> {
+    const id = randomUUID();
+    const result = await db.insert(tests).values({ 
+      ...insertTest, 
+      id,
+      headless: insertTest.headless ?? true,
+      screenshotOnFail: insertTest.screenshotOnFail ?? true,
+    }).returning();
+    return result[0];
+  }
+
+  async updateTest(id: string, testUpdate: Partial<InsertTest>): Promise<Test | undefined> {
+    const result = await db.update(tests)
+      .set(testUpdate)
+      .where(eq(tests.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteTest(id: string): Promise<boolean> {
+    const result = await db.delete(tests).where(eq(tests.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Test run operations
+  async getTestRun(id: string): Promise<TestRun | undefined> {
+    const result = await db.select().from(testRuns).where(eq(testRuns.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getTestRunsByTestId(testId: string): Promise<TestRun[]> {
+    return await db.select()
+      .from(testRuns)
+      .where(eq(testRuns.testId, testId))
+      .orderBy(desc(testRuns.startedAt));
+  }
+
+  async getAllTestRuns(limit?: number): Promise<TestRun[]> {
+    const query = db.select().from(testRuns).orderBy(desc(testRuns.startedAt));
+    if (limit) {
+      return await query.limit(limit);
+    }
+    return await query;
+  }
+
+  async createTestRun(insertTestRun: InsertTestRun): Promise<TestRun> {
+    const id = randomUUID();
+    const result = await db.insert(testRuns).values({ 
+      ...insertTestRun, 
+      id,
+      duration: insertTestRun.duration ?? null,
+      completedAt: insertTestRun.completedAt ?? null,
+      logs: insertTestRun.logs ?? null,
+      screenshot: insertTestRun.screenshot ?? null,
+      errorMessage: insertTestRun.errorMessage ?? null,
+    }).returning();
+    return result[0];
+  }
+
+  async updateTestRun(id: string, testRunUpdate: Partial<InsertTestRun>): Promise<TestRun | undefined> {
+    const result = await db.update(testRuns)
+      .set(testRunUpdate)
+      .where(eq(testRuns.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Schedule operations
+  async getSchedule(id: string): Promise<Schedule | undefined> {
+    const result = await db.select().from(schedules).where(eq(schedules.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getSchedulesByTestId(testId: string): Promise<Schedule[]> {
+    return await db.select()
+      .from(schedules)
+      .where(eq(schedules.testId, testId));
+  }
+
+  async getAllSchedules(): Promise<Schedule[]> {
+    return await db.select().from(schedules);
+  }
+
+  async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
+    const id = randomUUID();
+    const result = await db.insert(schedules).values({ 
+      ...insertSchedule, 
+      id,
+      enabled: insertSchedule.enabled ?? true,
+    }).returning();
+    return result[0];
+  }
+
+  async updateSchedule(id: string, scheduleUpdate: Partial<InsertSchedule>): Promise<Schedule | undefined> {
+    const result = await db.update(schedules)
+      .set(scheduleUpdate)
+      .where(eq(schedules.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteSchedule(id: string): Promise<boolean> {
+    const result = await db.delete(schedules).where(eq(schedules.id, id)).returning();
+    return result.length > 0;
+  }
+}
+
+// Use database storage instead of in-memory storage
+export const storage = new DbStorage();
