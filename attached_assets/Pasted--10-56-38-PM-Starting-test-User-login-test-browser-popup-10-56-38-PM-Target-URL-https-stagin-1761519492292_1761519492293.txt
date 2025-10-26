@@ -1,0 +1,24 @@
+[10:56:38 PM] Starting test: User login test -browser popup
+[10:56:38 PM] Target URL: https://staging.algopilotx.com
+[10:56:38 PM] Browser: chromium
+[10:56:38 PM] ✗ Test failed: browserType.launch: Target page, context or browser has been closed
+Browser logs:
+╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ Looks like you launched a headed browser without having a XServer running. ║
+║ Set either 'headless: true' or use 'xvfb-run <your-playwright-app>' before running Playwright. ║
+║ ║
+║ <3 Playwright Team ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+Call log:
+- <launching> /root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-XVPQRo --remote-debugging-pipe --no-startup-window
+- <launched> pid=24
+- [pid=24][err] [24:38:1026/225638.835295:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+- [pid=24][err] [24:24:1026/225638.836997:ERROR:ui/ozone/platform/x11/ozone_platform_x11.cc:249] Missing X server or $DISPLAY
+- [pid=24][err] [24:24:1026/225638.837019:ERROR:ui/aura/env.cc:257] The platform failed to initialize. Exiting.
+- [pid=24] <gracefully close start>
+- [pid=24] <kill>
+- [pid=24] <will force kill>
+- [pid=24] <process did exit: exitCode=1, signal=null>
+- [pid=24] starting temporary directories cleanup
+- [pid=24] finished temporary directories cleanup
+- [pid=24] <gracefully close end>
