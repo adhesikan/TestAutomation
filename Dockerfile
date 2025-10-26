@@ -32,17 +32,20 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Install Playwright browsers
-RUN npx playwright install chromium firefox webkit
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy application files
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Install Playwright browsers
+RUN npx playwright install chromium firefox webkit
+
+# Remove dev dependencies after build to reduce image size
+RUN npm prune --production
 
 # Expose port
 EXPOSE 5000
