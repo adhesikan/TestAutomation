@@ -1,16 +1,56 @@
 import TestRunnerDisplay from "@/components/TestRunnerDisplay";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { wsClient } from "@/lib/websocket";
+import type { TestRun, Test } from "@shared/schema";
 
 export default function TestRunner() {
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
-  const [currentTest, setCurrentTest] = useState<string>('Waiting for test execution...');
+  const [currentTest, setCurrentTest] = useState<string>('');
+  const [isLiveTest, setIsLiveTest] = useState(false);
+
+  const { data: latestRun } = useQuery<TestRun>({
+    queryKey: ['/api/test-runs/latest'],
+    queryFn: async () => {
+      const response = await fetch('/api/test-runs?limit=1');
+      if (!response.ok) throw new Error('Failed to fetch test runs');
+      const runs = await response.json();
+      return runs[0] || null;
+    },
+    refetchInterval: 5000,
+  });
+
+  const { data: test } = useQuery<Test>({
+    queryKey: ['/api/tests', latestRun?.testId],
+    queryFn: async () => {
+      if (!latestRun?.testId) return null;
+      const response = await fetch(`/api/tests/${latestRun.testId}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!latestRun?.testId && !isLiveTest,
+  });
+
+  useEffect(() => {
+    if (!isLiveTest && latestRun && test) {
+      setCurrentTest(test.name);
+      if (latestRun.logs) {
+        setLogs(latestRun.logs.split('\n'));
+      }
+      if (latestRun.status === 'passed') {
+        setProgress(100);
+      } else if (latestRun.status === 'failed') {
+        setProgress(100);
+      }
+    }
+  }, [latestRun, test, isLiveTest]);
 
   useEffect(() => {
     wsClient.connect();
 
     const handleLog = (data: any) => {
+      setIsLiveTest(true);
       setLogs((prev) => [...prev, data.message].slice(-50));
       
       const startTestMatch = data.message.match(/\[.+?\] Starting test: (.+)/);
@@ -21,6 +61,7 @@ export default function TestRunner() {
     };
 
     const handleProgress = (data: any) => {
+      setIsLiveTest(true);
       setProgress(data.progress);
     };
 
@@ -31,8 +72,7 @@ export default function TestRunner() {
       ]);
       setProgress(100);
       setTimeout(() => {
-        setCurrentTest('Waiting for test execution...');
-        setProgress(0);
+        setIsLiveTest(false);
       }, 3000);
     };
 
@@ -47,6 +87,8 @@ export default function TestRunner() {
     };
   }, []);
 
+  const displayTest = currentTest || (isLiveTest ? 'Waiting for test execution...' : 'No tests run yet');
+
   return (
     <div className="space-y-6">
       <div>
@@ -55,7 +97,7 @@ export default function TestRunner() {
       </div>
 
       <TestRunnerDisplay
-        currentTest={currentTest}
+        currentTest={displayTest}
         progress={progress}
         logs={logs}
         onPause={() => console.log('Pause clicked')}

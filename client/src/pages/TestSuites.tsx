@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TestConfigForm from "@/components/TestConfigForm";
+import TestDetailsDialog from "@/components/TestDetailsDialog";
 import {
   Table,
   TableBody,
@@ -28,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function TestSuites() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<Test | null>(null);
   const { toast } = useToast();
 
   const { data: tests = [] } = useQuery<Test[]>({
@@ -157,6 +159,7 @@ export default function TestSuites() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => setSelectedTest(test)}
                         data-testid={`button-view-${test.id}`}
                       >
                         <Eye className="h-4 w-4" />
@@ -189,6 +192,14 @@ export default function TestSuites() {
           />
         </DialogContent>
       </Dialog>
+
+      {selectedTest && (
+        <TestDetailsDialog
+          test={selectedTest}
+          open={!!selectedTest}
+          onOpenChange={(open) => !open && setSelectedTest(null)}
+        />
+      )}
     </div>
   );
 }
