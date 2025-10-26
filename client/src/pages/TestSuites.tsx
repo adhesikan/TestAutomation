@@ -23,12 +23,14 @@ import {
 } from "@/components/ui/table";
 import TestStatusBadge from "@/components/TestStatusBadge";
 import TestRunStatus from "@/components/TestRunStatus";
-import { Play, Eye, Trash2 } from "lucide-react";
+import { Play, Eye, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function TestSuites() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingTest, setEditingTest] = useState<Test | null>(null);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
   const { toast } = useToast();
 
@@ -46,6 +48,28 @@ export default function TestSuites() {
       toast({
         title: "Test created",
         description: "Your test has been created successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTestMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return await apiRequest('PUT', `/api/tests/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tests'] });
+      setShowEditDialog(false);
+      setEditingTest(null);
+      toast({
+        title: "Test updated",
+        description: "Your test has been updated successfully.",
       });
     },
     onError: (error: any) => {
@@ -167,6 +191,17 @@ export default function TestSuites() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => {
+                          setEditingTest(test);
+                          setShowEditDialog(true);
+                        }}
+                        data-testid={`button-edit-${test.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => deleteTestMutation.mutate(test.id)}
                         data-testid={`button-delete-${test.id}`}
                       >
@@ -190,6 +225,24 @@ export default function TestSuites() {
             onSave={(config) => createTestMutation.mutate(config)}
             onCancel={() => setShowCreateDialog(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Test</DialogTitle>
+          </DialogHeader>
+          {editingTest && (
+            <TestConfigForm
+              initialConfig={editingTest}
+              onSave={(config) => updateTestMutation.mutate({ id: editingTest.id, data: config })}
+              onCancel={() => {
+                setShowEditDialog(false);
+                setEditingTest(null);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
