@@ -1,0 +1,70 @@
+Enhance the existing test automation web app by adding a new feature called “Interactive Test Creator”, which lets users automatically generate Playwright test scripts by manually performing a test flow once.
+
+Requirements:
+
+Add a new page or section called “Create Test” in the current web interface.
+
+Include:
+
+A text input for the target URL (e.g. https://app.algopilotx.com)
+
+Buttons: Start Recording, Stop & Save, and Run Test
+
+A table or list to display all previously recorded tests with options to View Script, Run Test, and Download Script.
+
+Integrate Playwright’s Codegen behind the scenes:
+
+When the user clicks Start Recording, launch Playwright Codegen (npx playwright codegen <url>) using Node’s child_process.
+
+Let the user interact with the opened browser normally — their actions will be recorded automatically.
+
+When they click Stop & Save, close the Codegen session and save the generated Playwright test file in a /tests folder, using a timestamped filename like test_YYYYMMDD_HHMM.spec.ts.
+
+Backend Implementation (Express + Socket.io):
+
+Endpoint POST /api/record → starts recording using Codegen.
+
+Endpoint POST /api/run-test → runs a chosen test via npx playwright test <file>.
+
+Endpoint GET /api/tests → lists saved test scripts.
+
+Use Socket.IO to stream live terminal output (recording and test run logs) back to the frontend in real time.
+
+Frontend UI (React or vanilla JS):
+
+Clean layout with:
+
+Input box for the URL
+
+Buttons for “Record”, “Stop & Save”, “Run Test”
+
+A live Log Output Console showing streamed messages from the backend.
+
+When recording stops, show a success message and update the test list dynamically.
+
+NPM Setup:
+
+"scripts": {
+  "start": "node server.js",
+  "record": "playwright codegen",
+  "test": "playwright test"
+}
+
+
+Install dependencies:
+
+npm install playwright express socket.io child_process
+npx playwright install
+
+
+Deliverable:
+
+The Replit app runs with npm start and opens a working dashboard at localhost:3000 (or Replit preview).
+
+From that dashboard, a user can:
+✅ Enter a URL and record a test visually
+✅ Automatically save a generated Playwright test script
+✅ View and re-run saved tests anytime
+✅ See live logs and download scripts
+
+Ensure the feature integrates smoothly with the existing app’s project structure and Playwright configuration.
