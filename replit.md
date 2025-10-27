@@ -43,6 +43,7 @@ Supports a simple command-based scripting language for browser automation: `clic
 ## External Dependencies
 
 **Browser Automation**: Playwright library.
+**AI Integration**: OpenAI API for test script generation.
 **Scheduling**: `node-cron`.
 **Database**: Drizzle ORM, `@neondatabase/serverless` (PostgreSQL), `connect-pg-simple`.
 **UI Component Libraries**: `@radix-ui/*`, Recharts, Lucide React.
@@ -50,6 +51,37 @@ Supports a simple command-based scripting language for browser automation: `clic
 **Utilities**: `date-fns`, `zod`, `class-variance-authority`, `clsx`.
 
 ## Recent Changes
+
+### October 27, 2025 - AI-Powered Test Generator & Search Engine Blocking
+
+**AI-Powered Test Generator**:
+- Integrated OpenAI API (gpt-4o-mini) for automatic test script generation from plain English descriptions
+- Users describe what they want to test in natural language, AI generates the complete test script
+- No browser popup or Playwright Codegen needed - completely cloud-based
+- Three creation methods now available: AI Generator, Visual Builder, Raw Script
+- AI Generator is the default tab for new tests
+
+**Technical Implementation**:
+- Backend: `server/ai-generator.ts` with OpenAI integration using `gpt-4o-mini` model
+- API: POST `/api/generate-test` endpoint accepting description and targetUrl
+- Frontend: `AiTestGenerator.tsx` component with textarea and generate button
+- Integration: Added as first tab in `TestConfigForm.tsx` - "AI Generator" (default)
+- System prompt instructs AI to generate scripts in simple format (goto, click, type, wait, expect)
+- Error handling and loading states for user feedback
+
+**User Workflow**:
+1. Create new test and enter test name + target URL
+2. AI Generator tab is selected by default
+3. Describe test scenario in plain English (e.g., "Click login, enter username 'admin' and password 'test', submit, verify dashboard")
+4. Click "Generate Test Script"
+5. AI generates complete script automatically
+6. Switch to Visual Builder or Raw Script to review/edit
+7. Save and run test
+
+**Search Engine Blocking**:
+- Added `<meta name="robots" content="noindex, nofollow" />` to `client/index.html`
+- Prevents all search engines from indexing any page on the site
+- Ensures privacy for internal testing dashboard
 
 ### October 27, 2025 - Visual Script Builder
 
@@ -63,11 +95,11 @@ Supports a simple command-based scripting language for browser automation: `clic
 
 **Technical Implementation**:
 - Component: `ScriptBuilder.tsx` with form-based step builder
-- Integration: Added tabs to `TestConfigForm.tsx` - "Visual Builder" (default) and "Raw Script"
+- Integration: Added tabs to `TestConfigForm.tsx` - "AI Generator", "Visual Builder", and "Raw Script"
 - Sync mechanism: Uses refs (`lastExternalValue`, `isInternalUpdate`) to distinguish external vs internal updates
 - Helper functions: `parseScriptToSteps()` parses script into visual steps, `stepsToScript()` generates script from steps
 - Prevents circular updates while maintaining perfect sync between views
-- Works alongside existing "Import from Codegen" feature
+- Works alongside AI Generator and "Import from Codegen" feature
 
 **User Benefits**:
 - No browser window needed - completely cloud-friendly for Railway deployment
