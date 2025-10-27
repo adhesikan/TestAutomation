@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,86 +25,104 @@ interface ScriptBuilderProps {
   onChange: (script: string) => void;
 }
 
-export default function ScriptBuilder({ value, onChange }: ScriptBuilderProps) {
-  const [steps, setSteps] = useState<ScriptStep[]>([]);
+function parseScriptToSteps(script: string): ScriptStep[] {
+  if (!script.trim()) return [];
+  
+  const lines = script.split('\n').filter(line => line.trim());
+  const parsedSteps: ScriptStep[] = lines.map((line, index) => {
+    const trimmed = line.trim();
+    
+    if (trimmed.startsWith('goto ')) {
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'goto',
+        value: trimmed.replace('goto ', ''),
+      };
+    } else if (trimmed.startsWith('click ')) {
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'click',
+        selector: trimmed.replace('click ', ''),
+      };
+    } else if (trimmed.startsWith('type ')) {
+      const match = trimmed.match(/type ([^\s]+) "(.+)"/);
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'type',
+        selector: match?.[1] || '',
+        value: match?.[2] || '',
+      };
+    } else if (trimmed.startsWith('wait ')) {
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'wait',
+        waitTime: parseInt(trimmed.replace('wait ', '')) || 1000,
+      };
+    } else if (trimmed.startsWith('expect ')) {
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'expect',
+        selector: trimmed.replace('expect ', ''),
+      };
+    }
+    
+    return {
+      id: `step-${index}-${Date.now()}`,
+      action: 'goto',
+      value: '',
+    };
+  });
+  
+  return parsedSteps;
+}
 
-  // Parse initial value into steps
+function stepsToScript(steps: ScriptStep[]): string {
+  return steps.map(step => {
+    switch (step.action) {
+      case 'goto':
+        return `goto ${step.value || ''}`;
+      case 'click':
+        return `click ${step.selector || ''}`;
+      case 'type':
+        return `type ${step.selector || ''} "${step.value || ''}"`;
+      case 'wait':
+        return `wait ${step.waitTime || 1000}`;
+      case 'expect':
+        return `expect ${step.selector || ''}`;
+      default:
+        return '';
+    }
+  }).filter(line => line.trim()).join('\n');
+}
+
+export default function ScriptBuilder({ value, onChange }: ScriptBuilderProps) {
+  const [steps, setSteps] = useState<ScriptStep[]>(() => parseScriptToSteps(value));
+  const lastExternalValue = useRef(value);
+  const isInternalUpdate = useRef(false);
+
+  // Parse value into steps when it changes externally
   useEffect(() => {
-    if (value && steps.length === 0) {
-      const lines = value.split('\n').filter(line => line.trim());
-      const parsedSteps: ScriptStep[] = lines.map((line, index) => {
-        const trimmed = line.trim();
-        
-        if (trimmed.startsWith('goto ')) {
-          return {
-            id: `step-${index}`,
-            action: 'goto',
-            value: trimmed.replace('goto ', ''),
-          };
-        } else if (trimmed.startsWith('click ')) {
-          return {
-            id: `step-${index}`,
-            action: 'click',
-            selector: trimmed.replace('click ', ''),
-          };
-        } else if (trimmed.startsWith('type ')) {
-          const match = trimmed.match(/type ([^\s]+) "(.+)"/);
-          return {
-            id: `step-${index}`,
-            action: 'type',
-            selector: match?.[1] || '',
-            value: match?.[2] || '',
-          };
-        } else if (trimmed.startsWith('wait ')) {
-          return {
-            id: `step-${index}`,
-            action: 'wait',
-            waitTime: parseInt(trimmed.replace('wait ', '')) || 1000,
-          };
-        } else if (trimmed.startsWith('expect ')) {
-          return {
-            id: `step-${index}`,
-            action: 'expect',
-            selector: trimmed.replace('expect ', ''),
-          };
-        }
-        
-        return {
-          id: `step-${index}`,
-          action: 'goto',
-          value: '',
-        };
-      });
-      
-      if (parsedSteps.length > 0) {
-        setSteps(parsedSteps);
-      }
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+    
+    if (value !== lastExternalValue.current) {
+      lastExternalValue.current = value;
+      setSteps(parseScriptToSteps(value));
     }
   }, [value]);
 
-  // Convert steps to script string
+  // Convert steps to script string and notify parent
   useEffect(() => {
-    const script = steps.map(step => {
-      switch (step.action) {
-        case 'goto':
-          return `goto ${step.value || ''}`;
-        case 'click':
-          return `click ${step.selector || ''}`;
-        case 'type':
-          return `type ${step.selector || ''} "${step.value || ''}"`;
-        case 'wait':
-          return `wait ${step.waitTime || 1000}`;
-        case 'expect':
-          return `expect ${step.selector || ''}`;
-        default:
-          return '';
-      }
-    }).filter(line => line.trim()).join('\n');
+    const script = stepsToScript(steps);
     
-    if (script !== value) {
+    if (script !== lastExternalValue.current) {
+      isInternalUpdate.current = true;
+      lastExternalValue.current = script;
       onChange(script);
     }
-  }, [steps]);
+  }, [steps, onChange]);
 
   const addStep = () => {
     const newStep: ScriptStep = {
