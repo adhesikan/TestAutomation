@@ -13,10 +13,12 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
-import { FileCode, Info } from "lucide-react";
+import { FileCode, Info, Blocks, Code } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { parsePlaywrightScript } from "@/lib/playwrightParser";
+import ScriptBuilder from "@/components/ScriptBuilder";
 
 interface TestConfig {
   name: string;
@@ -44,6 +46,7 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
   });
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [playwrightScript, setPlaywrightScript] = useState('');
+  const [scriptMode, setScriptMode] = useState<'visual' | 'raw'>('visual');
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -127,8 +130,8 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="test-script">Test Script</Label>
+            <div className="flex items-center justify-between mb-3">
+              <Label>Test Script</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -140,20 +143,43 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
                 Import from Codegen
               </Button>
             </div>
-            <Textarea
-              id="test-script"
-              placeholder="Enter your test script or click 'Import from Codegen' to paste a Playwright script..."
-              className="font-mono text-sm min-h-32"
-              value={config.testScript}
-              onChange={(e) => setConfig({ ...config, testScript: e.target.value })}
-              data-testid="input-test-script"
-            />
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Simple format: <code className="bg-muted px-1 rounded">click [selector]</code>, <code className="bg-muted px-1 rounded">type [selector] "text"</code>, <code className="bg-muted px-1 rounded">expect [selector]</code>, <code className="bg-muted px-1 rounded">wait 1000</code>, <code className="bg-muted px-1 rounded">goto [url]</code>
-              </AlertDescription>
-            </Alert>
+            
+            <Tabs value={scriptMode} onValueChange={(v) => setScriptMode(v as any)} data-testid="tabs-script-mode">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="visual" data-testid="tab-visual-builder">
+                  <Blocks className="h-4 w-4 mr-2" />
+                  Visual Builder
+                </TabsTrigger>
+                <TabsTrigger value="raw" data-testid="tab-raw-script">
+                  <Code className="h-4 w-4 mr-2" />
+                  Raw Script
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="visual" className="mt-4">
+                <ScriptBuilder
+                  value={config.testScript}
+                  onChange={(script) => setConfig({ ...config, testScript: script })}
+                />
+              </TabsContent>
+
+              <TabsContent value="raw" className="mt-4 space-y-2">
+                <Textarea
+                  id="test-script"
+                  placeholder="Enter your test script or click 'Import from Codegen' to paste a Playwright script..."
+                  className="font-mono text-sm min-h-32"
+                  value={config.testScript}
+                  onChange={(e) => setConfig({ ...config, testScript: e.target.value })}
+                  data-testid="input-test-script"
+                />
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    Simple format: <code className="bg-muted px-1 rounded">click [selector]</code>, <code className="bg-muted px-1 rounded">type [selector] "text"</code>, <code className="bg-muted px-1 rounded">expect [selector]</code>, <code className="bg-muted px-1 rounded">wait 1000</code>, <code className="bg-muted px-1 rounded">goto [url]</code>
+                  </AlertDescription>
+                </Alert>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="space-y-3">
