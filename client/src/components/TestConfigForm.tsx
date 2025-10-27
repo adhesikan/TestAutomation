@@ -15,10 +15,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
-import { FileCode, Info, Blocks, Code } from "lucide-react";
+import { FileCode, Info, Blocks, Code, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { parsePlaywrightScript } from "@/lib/playwrightParser";
 import ScriptBuilder from "@/components/ScriptBuilder";
+import AiTestGenerator from "@/components/AiTestGenerator";
 
 interface TestConfig {
   name: string;
@@ -46,7 +47,7 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
   });
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [playwrightScript, setPlaywrightScript] = useState('');
-  const [scriptMode, setScriptMode] = useState<'visual' | 'raw'>('visual');
+  const [scriptMode, setScriptMode] = useState<'ai' | 'visual' | 'raw'>('ai');
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -145,7 +146,11 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
             </div>
             
             <Tabs value={scriptMode} onValueChange={(v) => setScriptMode(v as any)} data-testid="tabs-script-mode">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="ai" data-testid="tab-ai-generator">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Generator
+                </TabsTrigger>
                 <TabsTrigger value="visual" data-testid="tab-visual-builder">
                   <Blocks className="h-4 w-4 mr-2" />
                   Visual Builder
@@ -155,6 +160,13 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
                   Raw Script
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="ai" className="mt-4">
+                <AiTestGenerator
+                  targetUrl={config.url}
+                  onGenerate={(script) => setConfig({ ...config, testScript: script })}
+                />
+              </TabsContent>
 
               <TabsContent value="visual" className="mt-4">
                 <ScriptBuilder

@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { testExecutor } from "./test-executor";
 import { testScheduler } from "./scheduler";
 import { insertTestSchema, insertScheduleSchema } from "@shared/schema";
+import { generateTestScript } from "./ai-generator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -97,6 +98,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Test not found' });
       }
       res.status(204).send();
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI test generation route
+  app.post('/api/generate-test', async (req, res) => {
+    try {
+      const { description, targetUrl } = req.body;
+      
+      if (!description || !targetUrl) {
+        return res.status(400).json({ error: 'Description and targetUrl are required' });
+      }
+
+      const script = await generateTestScript({ description, targetUrl });
+      res.json({ script });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
