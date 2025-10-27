@@ -51,6 +51,32 @@ Supports a simple command-based scripting language for browser automation: `clic
 
 ## Recent Changes
 
+### October 27, 2025 - Visual Script Builder
+
+**Added Visual Script Builder Feature**:
+- Created cloud-friendly visual test builder for creating tests without browser windows or Playwright locally
+- Users build tests step-by-step using forms and dropdowns instead of writing code
+- Supports 5 action types: Navigate to URL (goto), Click Element (click), Type Text (type), Wait (wait), Expect Element (expect)
+- Step management: add, remove, reorder steps using intuitive UI
+- Bidirectional sync between Visual Builder and Raw Script tabs
+- Changes in visual builder immediately update raw script and vice versa
+
+**Technical Implementation**:
+- Component: `ScriptBuilder.tsx` with form-based step builder
+- Integration: Added tabs to `TestConfigForm.tsx` - "Visual Builder" (default) and "Raw Script"
+- Sync mechanism: Uses refs (`lastExternalValue`, `isInternalUpdate`) to distinguish external vs internal updates
+- Helper functions: `parseScriptToSteps()` parses script into visual steps, `stepsToScript()` generates script from steps
+- Prevents circular updates while maintaining perfect sync between views
+- Works alongside existing "Import from Codegen" feature
+
+**User Benefits**:
+- No browser window needed - completely cloud-friendly for Railway deployment
+- No local Playwright installation required
+- Easier for non-technical users - visual interface vs code writing
+- Prevents syntax errors in script generation
+- Visual representation of test flow
+- Can switch between visual and code views as needed
+
 ### October 27, 2025 - Real-time Status Updates Fix
 
 **Fixed Test Suite Status Not Updating After Test Completion**:
