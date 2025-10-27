@@ -14,6 +14,7 @@ export default function TestRunStatus({ testId }: TestRunStatusProps) {
       if (!response.ok) throw new Error('Failed to fetch test runs');
       return response.json();
     },
+    refetchInterval: 3000,
   });
 
   if (testRuns.length === 0) {

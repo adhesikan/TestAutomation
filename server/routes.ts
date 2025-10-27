@@ -23,8 +23,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ws.send(JSON.stringify({ type: 'progress', runId, progress }));
     };
 
-    const completeHandler = (runId: string, success: boolean) => {
-      ws.send(JSON.stringify({ type: 'complete', runId, success }));
+    const completeHandler = async (runId: string, success: boolean) => {
+      const testRun = await storage.getTestRun(runId);
+      ws.send(JSON.stringify({ 
+        type: 'complete', 
+        runId, 
+        testId: testRun?.testId,
+        success 
+      }));
     };
 
     testExecutor.on('log', logHandler);

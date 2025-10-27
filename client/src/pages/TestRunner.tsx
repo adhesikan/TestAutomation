@@ -2,6 +2,7 @@ import TestRunnerDisplay from "@/components/TestRunnerDisplay";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { wsClient } from "@/lib/websocket";
+import { queryClient } from "@/lib/queryClient";
 import type { TestRun, Test } from "@shared/schema";
 
 export default function TestRunner() {
@@ -71,6 +72,14 @@ export default function TestRunner() {
         data.success ? '✓ Test completed successfully' : '✗ Test failed',
       ]);
       setProgress(100);
+      
+      // Invalidate cache to update test suite status
+      queryClient.invalidateQueries({ queryKey: ['/api/test-runs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      if (data.testId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/tests', data.testId, 'runs'] });
+      }
+      
       setTimeout(() => {
         setIsLiveTest(false);
       }, 3000);

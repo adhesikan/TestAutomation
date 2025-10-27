@@ -48,3 +48,20 @@ Supports a simple command-based scripting language for browser automation: `clic
 **UI Component Libraries**: `@radix-ui/*`, Recharts, Lucide React.
 **WebSocket**: `ws` library.
 **Utilities**: `date-fns`, `zod`, `class-variance-authority`, `clsx`.
+
+## Recent Changes
+
+### October 27, 2025 - Real-time Status Updates Fix
+
+**Fixed Test Suite Status Not Updating After Test Completion**:
+- Added `refetchInterval: 3000` to TestRunStatus component for automatic polling every 3 seconds
+- Enhanced WebSocket 'complete' event to include `testId` for targeted cache invalidation
+- Added cache invalidation in TestRunner WebSocket handler for `/api/test-runs`, `/api/stats`, and specific test runs
+- Test suite "Last Status" column now updates automatically without page refresh
+- Works both via WebSocket (when on Test Runner page) and polling (when on Test Suites page)
+
+**Technical Implementation**:
+- Backend: Modified WebSocket `completeHandler` to fetch and include `testId` in complete event
+- Frontend: Added `queryClient.invalidateQueries()` calls in TestRunner WebSocket handler
+- Frontend: Added `refetchInterval: 3000` to TestRunStatus component as reliable fallback
+- Result: Status updates within 3 seconds of test completion across all pages
