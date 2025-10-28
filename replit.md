@@ -52,6 +52,16 @@ Supports a simple command-based scripting language for browser automation: `goto
 
 ## Recent Changes
 
+### October 28, 2025 - Modal UX Improvements & Enhanced AI Generator
+
+**Modal Size and Behavior Fixes**:
+- Reduced modal width from `max-w-2xl` (672px) to `max-w-xl` (576px) to fit better in viewport
+- Added `max-h-[85vh]` with `overflow-y-auto` - modal is now scrollable and fits within 85% of viewport height
+- Prevented accidental closing: clicking outside the modal no longer closes it
+- Modal can only be closed via Cancel button, Save button (on success), or ESC key
+- Prevents data loss from accidental clicks outside the modal
+- Applied to both Create Test and Edit Test modals
+
 ### October 28, 2025 - Enhanced AI-Powered Test Generator
 
 **AI-Powered Test Generator Enhancement**:
