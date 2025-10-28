@@ -49,16 +49,23 @@ Selectors should follow these rules:
 - For password fields, use: input[type="password"]
 - For number inputs, use: input[type="number"]
 - For inputs by placeholder, use: input[placeholder="<text>"]
-- For buttons, use: button:has-text("<text>")
-- For text elements (links, labels, headings, spans), use: text=Label (no quotes around the label)
+- For buttons (when explicitly a button), use: button:has-text("<text>")
 - For dropdown labels in select commands, use: label("<text>")
 - For ID selectors, use: #element-id
 
-IMPORTANT: When using text selectors, the format is text=Label NOT text("Label") or text="Label"
+CRITICAL CLICK SELECTOR RULES:
+- When clicking on text (labels, menu items, cards, list items, links), use: :has-text("<text>")
+  This finds the clickable parent container, not just the text node
+- When clicking buttons specifically, use: button:has-text("<text>")
+- For verification/expect statements only, use: text=<text> (no quotes)
+
 Examples:
-  - click text=Admin
-  - expect text=Data Sources
-  - hover text=System Settings
+  - click :has-text("Admin") - clicks container with "Admin" text
+  - click :has-text("Create new automation") - clicks card/div containing this text
+  - click :has-text("Settings") - clicks menu item or link with Settings
+  - click button:has-text("Continue") - specifically clicks a button
+  - expect text=Data Sources - verifies text exists (for expect only)
+  - hover :has-text("Account") - hovers over element containing Account
 
 ### Proven Examples from Training Dataset:
 
@@ -98,9 +105,16 @@ Generate the DSL steps now:`;
       throw new Error("Failed to generate test script");
     }
 
-    // Post-process: Convert legacy text("...") format to text=...
-    script = script.replace(/text\("([^"]+)"\)/g, 'text=$1');
-    script = script.replace(/text\('([^']+)'\)/g, 'text=$1');
+    // Post-process: Convert legacy formats to correct selectors
+    // Convert text("...") to text=... for expect statements
+    script = script.replace(/expect\s+text\("([^"]+)"\)/g, 'expect text=$1');
+    script = script.replace(/expect\s+text\('([^']+)'\)/g, 'expect text=$1');
+    
+    // Convert click text= to click :has-text() for proper container clicking
+    script = script.replace(/click\s+text=([^\s\n]+(?:\s+[^\s\n]+)*)/g, 'click :has-text("$1")');
+    
+    // Convert hover text= to hover :has-text()
+    script = script.replace(/hover\s+text=([^\s\n]+(?:\s+[^\s\n]+)*)/g, 'hover :has-text("$1")');
     
     return script;
   } catch (error: any) {
