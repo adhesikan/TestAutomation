@@ -32,7 +32,7 @@ Each step must be on its own line.
 - Type text into fields:
   type <selector> "<text>"
 
-- Select from dropdowns:
+- Select from HTML <select> dropdowns (RARE - most dropdowns are custom):
   select <selector> "<option>"
 
 - Scroll the page:
@@ -44,30 +44,65 @@ Each step must be on its own line.
 - Press keyboard keys:
   press "<key>"
 
-Selectors should follow these rules:
-- For email fields, use: input[type="email"]
-- For password fields, use: input[type="password"]
-- For number inputs, use: input[type="number"]
-- For inputs by placeholder, use: input[placeholder="<text>"]
-- For buttons (when explicitly a button), use: button:has-text("<text>")
-- For ID selectors, use: #element-id
-- Only use "select <selector> "<option>"" for actual HTML <select> dropdown elements
+### CRITICAL: AlgoPilotX-Specific Rules
 
-CRITICAL CLICK SELECTOR RULES:
-- When clicking on text (labels, menu items, cards, list items, links, strategy items, dropdown-like lists), use: :has-text("<text>")
-  This finds the clickable parent container, not just the text node
-- When clicking buttons specifically, use: button:has-text("<text>")
-- For verification/expect statements, use: text=<text> (no quotes)
+**LOGIN FLOW** (always use this exact template):
+expect input[type="email"]
+type input[type="email"] "<email>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "<password>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000
 
-Examples:
+**STRATEGY CARD SELECTION** (always use nth=0):
+expect :has-text("<strategy name>")
+click :has-text("<strategy name>") >> nth=0
+wait 1500
+
+Example: For "Publisher-based strategy"
+expect :has-text("Publisher-based strategy")
+click :has-text("Publisher-based strategy") >> nth=0
+wait 1500
+
+**DROPDOWN MENUS IN ALGOPILOTX**:
+AlgoPilotX dropdowns are NOT HTML <select> elements. They are custom div-based menus.
+To select from a dropdown:
+1. Click the dropdown to open it: click :has-text("<dropdown label>")
+2. Wait: wait 500
+3. Click the menu item: click :has-text("<menu item text>")
+4. Wait: wait 1000
+
+Example: "Select strategy Breakout Signal"
+click :has-text("Select Strategy")
+wait 500
+click :has-text("Breakout Signal")
+wait 1000
+
+NEVER use "select <selector> "<option>"" for AlgoPilotX dropdowns.
+
+### General Selector Rules:
+- For email fields: input[type="email"]
+- For password fields: input[type="password"]
+- For number inputs: input[type="number"]
+- For inputs by placeholder: input[placeholder="<text>"]
+- For buttons: button:has-text("<text>")
+- For ID selectors: #element-id
+- For clickable text (menu items, cards, links): :has-text("<text>")
+- For verification/expect: text=<text> (no quotes)
+
+### Click Selector Examples:
   - click :has-text("Admin") - clicks container with "Admin" text
-  - click :has-text("Create new automation") - clicks card/div containing this text
-  - click :has-text("Settings") - clicks menu item or link with Settings
-  - click :has-text("Publisher-based strategy") - clicks strategy card or list item
-  - click :has-text("Option Fundamentals Demo") - clicks selectable item from list
+  - click :has-text("Create new automation") - clicks card/div
+  - click :has-text("Settings") - clicks menu item or link
   - click button:has-text("Continue") - specifically clicks a button
-  - expect text=Data Sources - verifies text exists (for expect only)
-  - hover :has-text("Account") - hovers over element containing Account
+  - expect text=Dashboard - verifies text exists (expect only)
+  - hover :has-text("Account") - hovers over container
 
 ### Proven Examples from Training Dataset:
 

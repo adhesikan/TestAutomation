@@ -1,0 +1,66 @@
+You are updating the AI Script Generator in this project so it correctly handles:
+- Login flow
+- Clicking strategy cards
+- Selecting dropdown menu items after "Configure Single Strategy"
+
+### LOGIN (must always follow this template):
+expect input[type="email"]
+type input[type="email"] "<email>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "<password>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000
+
+### STRATEGY CARD SELECTION RULE:
+Never use label("…") or text=… for strategy cards.
+Always use:
+    expect :has-text("<card text>")
+    click :has-text("<card text>") >> nth=0
+
+Example:
+expect :has-text("Publisher-based strategy")
+click :has-text("Publisher-based strategy") >> nth=0
+
+### DROPDOWN SELECTION RULE (IMPORTANT):
+In AlgoPilotX UI, dropdowns are NOT `<select>` elements.
+They are clickable div menus that expand into clickable list items.
+
+Therefore:
+1. To open a dropdown:
+       click :has-text("<dropdown placeholder>")
+
+2. To choose an item:
+       click :has-text("<menu item text>")
+
+3. Do NOT use:
+       select <selector> "<value>"
+   unless the element is a **true HTML select**.
+
+### Example Dropdown Selection:
+User says: "Select strategy Breakout signal"
+Output:
+click :has-text("Select Strategy")
+wait 500
+click :has-text("Breakout Signal")
+wait 1000
+
+### SYSTEM PROMPT UPDATE:
+Add:
+"Dropdowns in AlgoPilotX are always selected by clicking the dropdown text to open, then clicking the menu item text. Never use the select <selector> syntax unless the element is a native HTML `<select>`."
+
+### Final Task:
+Update:
+- The system prompt text
+- The DSL output formatting logic so that:
+  - Login is always correct
+  - Strategy cards use `:has-text(...) >> nth=0`
+  - Dropdown menus use `click :has-text(...)` for open and select steps
+
+After applying changes, show me the updated system prompt and the generator output example for:
+"After Configure Single Strategy, select Signal > Breakout Signal"
