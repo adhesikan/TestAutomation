@@ -62,6 +62,21 @@ Supports a simple command-based scripting language for browser automation: `goto
 - Prevents data loss from accidental clicks outside the modal
 - Applied to both Create Test and Edit Test modals
 
+### October 28, 2025 - AI User Guide & Training Dataset Integration
+
+**AI Test Generator User Guide**:
+- Added comprehensive collapsible guide in AI Generator tab
+- Guide includes:
+  - Explanation of what AI Test Generator does
+  - How to write good descriptions
+  - 3 good examples (login flow, form submission, navigation)
+  - 2 bad examples with explanations
+  - Tips for best results
+- Accessible via "How to Use AI Test Generator" button
+- Collapsible to reduce clutter
+- Green/red color coding for good/bad examples
+- Uses CheckCircle and XCircle icons for visual clarity
+
 ### October 28, 2025 - AI Training Dataset Integration & Enhancement
 
 **AI Training Dataset Integration**:

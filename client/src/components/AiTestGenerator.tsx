@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sparkles, Loader2, HelpCircle, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AiTestGeneratorProps {
@@ -14,6 +16,7 @@ interface AiTestGeneratorProps {
 export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGeneratorProps) {
   const [description, setDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -85,6 +88,106 @@ export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGenerat
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Collapsible open={showGuide} onOpenChange={setShowGuide}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-between mb-4"
+              data-testid="button-toggle-guide"
+            >
+              <span className="flex items-center gap-2">
+                <HelpCircle className="h-4 w-4" />
+                How to Use AI Test Generator
+              </span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 mb-4">
+            <Alert>
+              <AlertDescription>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">What is AI Test Generator?</h4>
+                    <p className="text-sm text-muted-foreground">
+                      The AI Test Generator converts plain English descriptions into automated browser test scripts. Just describe what you want to test in natural language, and AI will create the test commands for you.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2">How to Write Good Descriptions</h4>
+                    <ul className="text-sm text-muted-foreground space-y-2 ml-4 list-disc">
+                      <li>Be specific about actions: "click", "type", "select", "verify"</li>
+                      <li>Include exact text for buttons and fields</li>
+                      <li>Mention expected outcomes</li>
+                      <li>Describe steps in order</li>
+                      <li>Use quotes for text values</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      Good Examples
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="bg-muted p-3 rounded">
+                        <p className="font-medium text-green-600">Login Flow</p>
+                        <p className="text-muted-foreground mt-1">
+                          "Enter email 'user@example.com', click Continue, enter password 'test123', click Continue to log in"
+                        </p>
+                      </div>
+                      <div className="bg-muted p-3 rounded">
+                        <p className="font-medium text-green-600">Form Submission</p>
+                        <p className="text-muted-foreground mt-1">
+                          "Fill ticker field with NVDA, select Stock from equity type dropdown, enter quantity 10, click Create Automation"
+                        </p>
+                      </div>
+                      <div className="bg-muted p-3 rounded">
+                        <p className="font-medium text-green-600">Navigation</p>
+                        <p className="text-muted-foreground mt-1">
+                          "Click Settings menu, scroll down, click Account Settings, verify account page loads"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <XCircle className="h-4 w-4 text-red-600" />
+                      Avoid These
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="bg-muted p-3 rounded">
+                        <p className="font-medium text-red-600">Too vague</p>
+                        <p className="text-muted-foreground mt-1">
+                          "Test the login" - Missing specific steps and values
+                        </p>
+                      </div>
+                      <div className="bg-muted p-3 rounded">
+                        <p className="font-medium text-red-600">No details</p>
+                        <p className="text-muted-foreground mt-1">
+                          "Click some buttons" - Not specific about which buttons
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2">Tips for Best Results</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+                      <li>Start with navigation if needed: "Go to login page"</li>
+                      <li>Use exact button text: "Continue" instead of "next button"</li>
+                      <li>For inputs, mention the field type or placeholder</li>
+                      <li>Include wait steps for page loads: "wait for page to load"</li>
+                      <li>End with verification: "verify dashboard appears"</li>
+                    </ul>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </CollapsibleContent>
+        </Collapsible>
+
         <div className="space-y-2">
           <Label htmlFor="ai-description">What do you want to test?</Label>
           <Textarea
