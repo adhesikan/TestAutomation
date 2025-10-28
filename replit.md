@@ -52,6 +52,30 @@ Supports a simple command-based scripting language for browser automation: `goto
 
 ## Recent Changes
 
+### October 28, 2025 - Fixed Invalid label() Selectors in AI Generator
+
+**Invalid Selector Fix**:
+- Removed invalid `label("text")` selector format that caused Playwright errors
+- Replaced with `:has-text("text")` for dropdown/list items, strategy cards, and selectable items
+- Applied across system prompt, training dataset, and post-processing
+
+**Examples of Fix**:
+- `label("Publisher-based strategy")` → `click :has-text("Publisher-based strategy")`
+- `label("Option Fundamentals Demo")` → `click :has-text("Option Fundamentals Demo")`
+- `select label("Source") "TradingView"` → `select :has-text("Source") "TradingView"`
+
+**Why This Fix**:
+- `label("text")` is invalid Playwright syntax causing "Unexpected token" errors
+- `:has-text("text")` is valid and finds the parent container element
+- Works for strategy cards, list items, menu items, and custom dropdowns
+
+**Technical Implementation**:
+- Updated `server/ai-generator.ts` system prompt to remove label() selector rule
+- Added clarification: only use `select` command for actual HTML `<select>` elements
+- Added post-processing regex to convert legacy `label("X")` to `:has-text("X")`
+- Updated `server/training-dataset.ts` examples from label() to :has-text()
+- Updated enhance dataset prompt for consistency
+
 ### October 28, 2025 - Modal UX Improvements & Enhanced AI Generator
 
 **Modal Size and Behavior Fixes**:
