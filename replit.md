@@ -62,6 +62,27 @@ Supports a simple command-based scripting language for browser automation: `goto
 - Prevents data loss from accidental clicks outside the modal
 - Applied to both Create Test and Edit Test modals
 
+### October 28, 2025 - Text Selector Format Update
+
+**AI DSL Text Selector Format Change**:
+- Updated text selector format from `text("Label")` to `text=Label`
+- Applied across all training examples and system prompts
+- Examples:
+  - `click text=Admin` (not `click text("Admin")`)
+  - `expect text=Data Sources` (not `expect text("Data Sources")`)
+  - `hover text=System Settings` (not `hover text("System Settings")`)
+- Post-processing added to convert any legacy format automatically
+- Maintains compatibility with other selectors:
+  - `button:has-text("Continue")` - unchanged
+  - `label("Source")` in select commands - unchanged
+  - `input[type="email"]` - unchanged
+
+**Technical Implementation**:
+- Updated `server/training-dataset.ts` with new format in all examples
+- Updated `server/ai-generator.ts` system prompt with explicit instructions and examples
+- Added post-processing regex to convert legacy `text("...")` to `text=...`
+- Updated dataset enhancement prompt for consistency
+
 ### October 28, 2025 - AI User Guide & Training Dataset Integration
 
 **AI Test Generator User Guide**:

@@ -145,7 +145,7 @@ export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGenerat
                       <div className="bg-muted p-3 rounded">
                         <p className="font-medium text-green-600">Navigation</p>
                         <p className="text-muted-foreground mt-1">
-                          "Click Settings menu, scroll down, click Account Settings, verify account page loads"
+                          "Click Admin, wait, click Data Sources, wait, click System Settings"
                         </p>
                       </div>
                     </div>

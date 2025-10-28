@@ -47,14 +47,14 @@ wait 2500`
   // BUTTONS & NAVIGATION
   {
     english: "Click the Create new automation button.",
-    dsl: `expect text("Create new automation")
-click text("Create new automation")
+    dsl: `expect text=Create new automation
+click text=Create new automation
 wait 1500`
   },
   {
     english: "Open the settings menu.",
-    dsl: `expect text("Settings")
-click text("Settings")
+    dsl: `expect text=Settings
+click text=Settings
 wait 1500`
   },
   {
@@ -115,7 +115,7 @@ wait 1000`
   },
   {
     english: "Hover over the account menu.",
-    dsl: `hover text("Account")
+    dsl: `hover text=Account
 wait 1000`
   },
   
@@ -124,8 +124,8 @@ wait 1000`
     english: "Create a new NVDA stock automation setup.",
     dsl: `goto https://staging.algopilotx.com
 wait 2000
-expect text("Create new automation")
-click text("Create new automation")
+expect text=Create new automation
+click text=Create new automation
 wait 1500
 select label("Source") "TradingView"
 wait 1000

@@ -50,9 +50,15 @@ Selectors should follow these rules:
 - For number inputs, use: input[type="number"]
 - For inputs by placeholder, use: input[placeholder="<text>"]
 - For buttons, use: button:has-text("<text>")
-- For text inside elements, use: text("<partial or exact text>")
-- For labels, use: label("<text>")
+- For text elements (links, labels, headings, spans), use: text=Label (no quotes around the label)
+- For dropdown labels in select commands, use: label("<text>")
 - For ID selectors, use: #element-id
+
+IMPORTANT: When using text selectors, the format is text=Label NOT text("Label") or text="Label"
+Examples:
+  - click text=Admin
+  - expect text=Data Sources
+  - hover text=System Settings
 
 ### Proven Examples from Training Dataset:
 
@@ -86,12 +92,16 @@ Generate the DSL steps now:`;
       max_tokens: 1000,
     });
 
-    const script = completion.choices[0]?.message?.content?.trim() || "";
+    let script = completion.choices[0]?.message?.content?.trim() || "";
     
     if (!script) {
       throw new Error("Failed to generate test script");
     }
 
+    // Post-process: Convert legacy text("...") format to text=...
+    script = script.replace(/text\("([^"]+)"\)/g, 'text=$1');
+    script = script.replace(/text\('([^']+)'\)/g, 'text=$1');
+    
     return script;
   } catch (error: any) {
     console.error("AI generation error:", error);
@@ -126,9 +136,11 @@ These examples will be used to train an AI model that converts plain English to 
 - Number: input[type="number"]
 - Placeholder: input[placeholder="text"]
 - Button: button:has-text("text")
-- Text: text("text")
-- Label: label("text")
+- Text elements: text=Label (NO quotes around label)
+- Dropdown labels: label("text")
 - ID: #element-id
+
+IMPORTANT: Text selector format is text=Label NOT text("Label")
 
 ### Output Format:
 Return ONLY a JSON array with this structure:
