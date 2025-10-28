@@ -2,7 +2,7 @@
 
 ## Overview
 
-AlgoPilotX Test Monitor is an automated testing dashboard for monitoring and executing browser-based tests against `app.algopilotx.com`. It provides real-time test execution, scheduling capabilities, and comprehensive test result tracking with visual analytics. The system uses Playwright for browser automation across Chromium, Firefox, and WebKit, allowing custom scripts, cron-scheduled tests, and real-time monitoring via WebSockets. The project is fully operational with complete frontend-backend integration and persists all data in a PostgreSQL database, with a dark mode as the default theme.
+AlgoPilotX Test Monitor is an automated testing dashboard designed for monitoring and executing browser-based tests against `app.algopilotx.com`. It offers real-time test execution, scheduling, and comprehensive test result tracking with visual analytics. The system leverages Playwright for browser automation across Chromium, Firefox, and WebKit, supporting custom scripts, cron-scheduled tests, and real-time monitoring via WebSockets. It features full frontend-backend integration, persists data in a PostgreSQL database, and defaults to a dark mode theme. The project aims to provide a robust, user-friendly platform for efficient test automation and monitoring.
 
 ## User Preferences
 
@@ -12,239 +12,26 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework**: React with TypeScript (Vite).
-**UI/UX**: Radix UI primitives with shadcn/ui styling, following Material Design principles ("new-york" style variant). Emphasizes clarity and scannability for data-dense dashboards.
-**Typography**: Inter (UI) and JetBrains Mono (code/logs), with a structured hierarchy.
-**State Management**: TanStack Query (React Query) for server state; WebSocket client for real-time updates.
-**Routing**: Wouter for client-side routing (Dashboard, Test Suites, Test Runner, Settings).
-**Styling**: Tailwind CSS with custom design tokens for theming (dark mode default, light mode support).
-**Real-time Updates**: WebSocket connection to `/ws` for test execution logs, progress, and completion.
+The frontend is built with React and TypeScript using Vite. It utilizes Radix UI primitives and shadcn/ui styling, adhering to Material Design principles ("new-york" style) for clear, scannable data dashboards. Typography uses Inter for UI and JetBrains Mono for code/logs. State management is handled by TanStack Query for server state and a WebSocket client for real-time updates. Wouter manages client-side routing. Styling is implemented with Tailwind CSS and custom design tokens, with dark mode as the default. Real-time updates for test execution logs and progress are handled via a WebSocket connection to `/ws`.
 
 ### Backend Architecture
 
-**Runtime**: Node.js with Express server (TypeScript, ES modules).
-**API Structure**: RESTful API under `/api` for tests, test runs, schedules, and stats.
-**WebSocket Server**: `ws` library integrated with HTTP server on `/ws` for real-time test execution communication (event-driven architecture).
-**Test Execution**: Playwright-based executor (`server/test-executor.ts`) supporting multiple browsers (Chromium, Firefox, WebKit), headless/headed modes, screenshot capture on failures, and simple script commands (click, type, wait, expect, goto).
-**Scheduler**: `node-cron` based system (`server/scheduler.ts`) for managing scheduled test runs with cron expression validation.
-**Storage Interface**: Abstract `IStorage` interface, implemented with PostgreSQL.
+The backend is a Node.js application using Express (TypeScript, ES modules). It exposes a RESTful API under `/api` for managing tests, test runs, schedules, and statistics. A `ws` library-based WebSocket server is integrated at `/ws` for real-time test execution communication. Test execution is powered by a Playwright-based executor (`server/test-executor.ts`) supporting multiple browsers, headless/headed modes, screenshot capture on failures, and a simple command-based scripting language (`goto`, `click`, `type`, `select`, `wait`, `expect`). Test scheduling is managed by a `node-cron` based system (`server/scheduler.ts`). Data persistence uses an abstract `IStorage` interface implemented with PostgreSQL.
 
 ### Data Storage Solutions
 
-**Database**: PostgreSQL with Drizzle ORM.
-**Schema**: Defined in `shared/schema.ts`, includes `tests`, `test_runs`, `schedules`, and `users` (reserved).
-**Connection**: Via `DATABASE_URL` environment variable using `@neondatabase/serverless` driver. Migrations handled by `npm run db:push`.
-**Screenshot Storage**: Failure screenshots are captured as base64 strings and stored directly in `test_runs.screenshot` column.
+The project uses PostgreSQL as its database, managed with Drizzle ORM. The schema, defined in `shared/schema.ts`, includes tables for `tests`, `test_runs`, `schedules`, and `users`. The database connects via a `DATABASE_URL` environment variable using the `@neondatabase/serverless` driver. Migrations are handled by `npm run db:push`. Failure screenshots are stored as base64 strings directly in the `test_runs.screenshot` column.
 
 ### Test Script Language
 
-Supports a simple command-based scripting language for browser automation: `goto <url>`, `click <selector>`, `type <selector> "text"`, `select <selector> "option"`, `wait <milliseconds>`, `expect <selector>`. Includes a Playwright parser to convert Codegen output to this simple format.
+The system supports a simple, command-based scripting language for browser automation, including commands like `goto <url>`, `click <selector>`, `type <selector> "text"`, `select <selector> "option"`, `wait <milliseconds>`, and `expect <selector>`. It also includes a Playwright parser to convert Codegen output into this simplified format. The AI generator incorporates specific patterns for AlgoPilotX's login flow, strategy card selection using `nth=0`, and custom dropdown menu interactions via click-to-open/click-to-select.
 
 ## External Dependencies
 
-**Browser Automation**: Playwright library.
-**AI Integration**: OpenAI API for test script generation.
-**Scheduling**: `node-cron`.
-**Database**: Drizzle ORM, `@neondatabase/serverless` (PostgreSQL), `connect-pg-simple`.
-**UI Component Libraries**: `@radix-ui/*`, Recharts, Lucide React.
-**WebSocket**: `ws` library.
-**Utilities**: `date-fns`, `zod`, `class-variance-authority`, `clsx`.
-
-## Recent Changes
-
-### October 28, 2025 - Fixed Invalid label() Selectors in AI Generator
-
-**Invalid Selector Fix**:
-- Removed invalid `label("text")` selector format that caused Playwright errors
-- Replaced with `:has-text("text")` for dropdown/list items, strategy cards, and selectable items
-- Applied across system prompt, training dataset, and post-processing
-
-**Examples of Fix**:
-- `label("Publisher-based strategy")` → `click :has-text("Publisher-based strategy")`
-- `label("Option Fundamentals Demo")` → `click :has-text("Option Fundamentals Demo")`
-- `select label("Source") "TradingView"` → `select :has-text("Source") "TradingView"`
-
-**Why This Fix**:
-- `label("text")` is invalid Playwright syntax causing "Unexpected token" errors
-- `:has-text("text")` is valid and finds the parent container element
-- Works for strategy cards, list items, menu items, and custom dropdowns
-
-**Technical Implementation**:
-- Updated `server/ai-generator.ts` system prompt to remove label() selector rule
-- Added clarification: only use `select` command for actual HTML `<select>` elements
-- Added post-processing regex to convert legacy `label("X")` to `:has-text("X")`
-- Updated `server/training-dataset.ts` examples from label() to :has-text()
-- Updated enhance dataset prompt for consistency
-
-### October 28, 2025 - Modal UX Improvements & Enhanced AI Generator
-
-**Modal Size and Behavior Fixes**:
-- Reduced modal width from `max-w-2xl` (672px) to `max-w-xl` (576px) to fit better in viewport
-- Added `max-h-[85vh]` with `overflow-y-auto` - modal is now scrollable and fits within 85% of viewport height
-- Prevented accidental closing: clicking outside the modal no longer closes it
-- Modal can only be closed via Cancel button, Save button (on success), or ESC key
-- Prevents data loss from accidental clicks outside the modal
-- Applied to both Create Test and Edit Test modals
-
-### October 28, 2025 - AI Description Text Persistence
-
-**Persistent AI Test Description**:
-- User's natural language description in "What do you want to test?" box now persists using localStorage
-- Description is automatically saved whenever user types or updates text
-- Description remains visible even after:
-  - Closing and reopening the Create Test modal
-  - Switching between tabs (AI Generator, Visual Builder, Raw Script)
-  - Generating a test script
-  - Browser refresh
-- Description only clears when user manually deletes the text
-- Storage key: `ai-test-description`
-
-**Technical Implementation**:
-- Added `useEffect` hook to load description from localStorage on component mount
-- Created `handleDescriptionChange` function to update both state and localStorage
-- Removed automatic clearing of description after test generation
-- Text persists across all user sessions until explicitly deleted
-
-### October 28, 2025 - Click Selector Fix: :has-text() for Containers
-
-**AI DSL Click Selector Format Change**:
-- Updated click selector format from `click text=Label` to `click :has-text("Label")`
-- This fixes the issue where text nodes aren't directly clickable - the parent container is
-- Applied across all training examples and system prompts
-- Examples:
-  - `click :has-text("Admin")` - clicks the container with "Admin" text
-  - `click :has-text("Create new automation")` - clicks card/div containing this text
-  - `click :has-text("Settings")` - clicks menu item or link
-  - `click button:has-text("Continue")` - specifically for buttons
-  - `expect text=Data Sources` - verification only (unchanged)
-  - `hover :has-text("Account")` - hovers over container
-
-**Why This Change**:
-- Text elements like labels, menu items, cards are typically inside clickable containers
-- `text=Label` tries to click the text node itself (doesn't work)
-- `:has-text("Label")` finds the parent clickable element (works correctly)
-
-**Technical Implementation**:
-- Updated `server/ai-generator.ts` system prompt with :has-text() rules and examples
-- Updated `server/training-dataset.ts` with new format in all click/hover examples
-- Added post-processing regex to convert legacy `click text=` to `click :has-text()`
-- Updated dataset enhancement prompt for consistency
-- `expect text=Label` format preserved for verification statements
-
-### October 28, 2025 - AI User Guide & Training Dataset Integration
-
-**AI Test Generator User Guide**:
-- Added comprehensive collapsible guide in AI Generator tab
-- Guide includes:
-  - Explanation of what AI Test Generator does
-  - How to write good descriptions
-  - 3 good examples (login flow, form submission, navigation)
-  - 2 bad examples with explanations
-  - Tips for best results
-- Accessible via "How to Use AI Test Generator" button
-- Collapsible to reduce clutter
-- Green/red color coding for good/bad examples
-- Uses CheckCircle and XCircle icons for visual clarity
-
-### October 28, 2025 - AI Training Dataset Integration & Enhancement
-
-**AI Training Dataset Integration**:
-- Integrated comprehensive training dataset with 16 proven examples covering:
-  - Login/auth workflows (email + password flows)
-  - Button clicks and navigation
-  - Form inputs (text, numbers, placeholders)
-  - Dropdown selections
-  - Scroll and hover actions
-  - Complex multi-step automation flows
-- AI generator now uses these examples as few-shot learning data
-- Significantly improved accuracy and consistency of generated scripts
-
-**Dataset Enhancement System**:
-- New API endpoint: `POST /api/enhance-dataset` to generate more training examples
-- Uses OpenAI to create diverse, realistic browser automation scenarios
-- Generates varied examples covering:
-  - Login/logout workflows
-  - Form submissions
-  - Search functionality
-  - E-commerce actions
-  - Account management
-  - Multi-step processes
-- Returns JSON with new examples that can be added to training dataset
-
-**Enhanced DSL Support**:
-- Added scroll command: `scroll <pixels>`
-- Added hover command: `hover <selector>`
-- Added press command: `press "<key>"`
-- Expanded selector rules for placeholders, labels, and IDs
-- Improved wait time guidelines (500ms quick, 1500-2000ms major changes)
-
-**Technical Implementation**:
-- Created `server/training-dataset.ts` with structured training examples
-- `getFewShotExamples()` function provides examples to AI prompt
-- `enhanceTrainingDataset()` function uses OpenAI to generate more examples
-- API: POST `/api/enhance-dataset` with configurable count parameter
-- Training data now embedded directly in AI system prompt
-
-### October 27, 2025 - AI-Powered Test Generator & Search Engine Blocking
-
-**Initial AI-Powered Test Generator**:
-- Integrated OpenAI API (gpt-4o-mini) for automatic test script generation from plain English descriptions
-- Users describe what they want to test in natural language, AI generates the complete test script
-- No browser popup or Playwright Codegen needed - completely cloud-based
-- Three creation methods now available: AI Generator, Visual Builder, Raw Script
-- AI Generator is the default tab for new tests
-
-**User Workflow**:
-1. Create new test and enter test name + target URL
-2. AI Generator tab is selected by default
-3. Describe test scenario in plain English (e.g., "Click login, enter username 'admin' and password 'test', submit, verify dashboard")
-4. Click "Generate Test Script"
-5. AI generates complete script automatically
-6. Switch to Visual Builder or Raw Script to review/edit
-7. Save and run test
-
-**Search Engine Blocking**:
-- Added `<meta name="robots" content="noindex, nofollow" />` to `client/index.html`
-- Prevents all search engines from indexing any page on the site
-- Ensures privacy for internal testing dashboard
-
-### October 27, 2025 - Visual Script Builder
-
-**Added Visual Script Builder Feature**:
-- Created cloud-friendly visual test builder for creating tests without browser windows or Playwright locally
-- Users build tests step-by-step using forms and dropdowns instead of writing code
-- Supports 5 action types: Navigate to URL (goto), Click Element (click), Type Text (type), Wait (wait), Expect Element (expect)
-- Step management: add, remove, reorder steps using intuitive UI
-- Bidirectional sync between Visual Builder and Raw Script tabs
-- Changes in visual builder immediately update raw script and vice versa
-
-**Technical Implementation**:
-- Component: `ScriptBuilder.tsx` with form-based step builder
-- Integration: Added tabs to `TestConfigForm.tsx` - "AI Generator", "Visual Builder", and "Raw Script"
-- Sync mechanism: Uses refs (`lastExternalValue`, `isInternalUpdate`) to distinguish external vs internal updates
-- Helper functions: `parseScriptToSteps()` parses script into visual steps, `stepsToScript()` generates script from steps
-- Prevents circular updates while maintaining perfect sync between views
-- Works alongside AI Generator and "Import from Codegen" feature
-
-**User Benefits**:
-- No browser window needed - completely cloud-friendly for Railway deployment
-- No local Playwright installation required
-- Easier for non-technical users - visual interface vs code writing
-- Prevents syntax errors in script generation
-- Visual representation of test flow
-- Can switch between visual and code views as needed
-
-### October 27, 2025 - Real-time Status Updates Fix
-
-**Fixed Test Suite Status Not Updating After Test Completion**:
-- Added `refetchInterval: 3000` to TestRunStatus component for automatic polling every 3 seconds
-- Enhanced WebSocket 'complete' event to include `testId` for targeted cache invalidation
-- Added cache invalidation in TestRunner WebSocket handler for `/api/test-runs`, `/api/stats`, and specific test runs
-- Test suite "Last Status" column now updates automatically without page refresh
-- Works both via WebSocket (when on Test Runner page) and polling (when on Test Suites page)
-
-**Technical Implementation**:
-- Backend: Modified WebSocket `completeHandler` to fetch and include `testId` in complete event
-- Frontend: Added `queryClient.invalidateQueries()` calls in TestRunner WebSocket handler
-- Frontend: Added `refetchInterval: 3000` to TestRunStatus component as reliable fallback
-- Result: Status updates within 3 seconds of test completion across all pages
+-   **Browser Automation**: Playwright library
+-   **AI Integration**: OpenAI API (for test script generation)
+-   **Scheduling**: `node-cron`
+-   **Database**: Drizzle ORM, `@neondatabase/serverless` (PostgreSQL driver), `connect-pg-simple`
+-   **UI Components**: `@radix-ui/*`, Recharts, Lucide React
+-   **WebSocket**: `ws` library
+-   **Utilities**: `date-fns`, `zod`, `class-variance-authority`, `clsx`
