@@ -48,13 +48,13 @@ wait 2500`
   {
     english: "Click the Create new automation button.",
     dsl: `expect text=Create new automation
-click text=Create new automation
+click :has-text("Create new automation")
 wait 1500`
   },
   {
     english: "Open the settings menu.",
     dsl: `expect text=Settings
-click text=Settings
+click :has-text("Settings")
 wait 1500`
   },
   {
@@ -115,7 +115,7 @@ wait 1000`
   },
   {
     english: "Hover over the account menu.",
-    dsl: `hover text=Account
+    dsl: `hover :has-text("Account")
 wait 1000`
   },
   
@@ -125,7 +125,7 @@ wait 1000`
     dsl: `goto https://staging.algopilotx.com
 wait 2000
 expect text=Create new automation
-click text=Create new automation
+click :has-text("Create new automation")
 wait 1500
 select label("Source") "TradingView"
 wait 1000
