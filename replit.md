@@ -62,27 +62,44 @@ Supports a simple command-based scripting language for browser automation: `goto
 - Prevents data loss from accidental clicks outside the modal
 - Applied to both Create Test and Edit Test modals
 
-### October 28, 2025 - Enhanced AI-Powered Test Generator
+### October 28, 2025 - AI Training Dataset Integration & Enhancement
 
-**AI-Powered Test Generator Enhancement**:
-- Updated system prompt with detailed DSL specification and strict output requirements
-- AI now generates clean, comment-free scripts following exact DSL syntax
-- Specific selector rules for common patterns:
-  - Email fields: `input[type="email"]`
-  - Password fields: `input[type="password"]`
-  - Buttons: `button:has-text("Continue")`
-  - Text elements: `text("Login successful")`
-- Includes detailed examples for login flows and form filling
-- Added support for dropdown selection with `select <selector> "option"` command
-- Executor handles both option labels (visible text) and values
+**AI Training Dataset Integration**:
+- Integrated comprehensive training dataset with 16 proven examples covering:
+  - Login/auth workflows (email + password flows)
+  - Button clicks and navigation
+  - Form inputs (text, numbers, placeholders)
+  - Dropdown selections
+  - Scroll and hover actions
+  - Complex multi-step automation flows
+- AI generator now uses these examples as few-shot learning data
+- Significantly improved accuracy and consistency of generated scripts
+
+**Dataset Enhancement System**:
+- New API endpoint: `POST /api/enhance-dataset` to generate more training examples
+- Uses OpenAI to create diverse, realistic browser automation scenarios
+- Generates varied examples covering:
+  - Login/logout workflows
+  - Form submissions
+  - Search functionality
+  - E-commerce actions
+  - Account management
+  - Multi-step processes
+- Returns JSON with new examples that can be added to training dataset
+
+**Enhanced DSL Support**:
+- Added scroll command: `scroll <pixels>`
+- Added hover command: `hover <selector>`
+- Added press command: `press "<key>"`
+- Expanded selector rules for placeholders, labels, and IDs
+- Improved wait time guidelines (500ms quick, 1500-2000ms major changes)
 
 **Technical Implementation**:
-- Backend: `server/ai-generator.ts` with comprehensive DSL-focused system prompt
-- System prompt includes syntax rules, selector patterns, and input→output examples
-- Frontend: Support for "Select Dropdown" action in Visual Builder
-- Executor: `test-executor.ts` tries label selection first, falls back to value
-- API: POST `/api/generate-test` endpoint accepting description and targetUrl
-- Works seamlessly with Visual Builder and Raw Script modes
+- Created `server/training-dataset.ts` with structured training examples
+- `getFewShotExamples()` function provides examples to AI prompt
+- `enhanceTrainingDataset()` function uses OpenAI to generate more examples
+- API: POST `/api/enhance-dataset` with configurable count parameter
+- Training data now embedded directly in AI system prompt
 
 ### October 27, 2025 - AI-Powered Test Generator & Search Engine Blocking
 

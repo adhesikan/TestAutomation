@@ -119,6 +119,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhance training dataset using AI
+  app.post('/api/enhance-dataset', async (req, res) => {
+    try {
+      const { count = 10 } = req.body;
+      
+      const { enhanceTrainingDataset } = await import('./ai-generator');
+      const newExamples = await enhanceTrainingDataset(count);
+      
+      res.json({ 
+        success: true,
+        count: newExamples.length,
+        examples: newExamples 
+      });
+    } catch (error: any) {
+      console.error('Dataset enhancement error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Test execution routes
   app.post('/api/tests/:id/run', async (req, res) => {
     try {

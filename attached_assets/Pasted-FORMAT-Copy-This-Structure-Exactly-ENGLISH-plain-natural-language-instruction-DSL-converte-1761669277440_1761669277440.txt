@@ -1,0 +1,177 @@
+FORMAT (Copy This Structure Exactly)
+# ENGLISH
+<plain natural language instruction>
+
+# DSL
+<converted DSL commands>
+
+
+One pair per block. No extra commentary.
+
+🟢 LOGIN / AUTH WORKFLOWS
+# ENGLISH
+Go to the login page and wait for it to load.
+
+# DSL
+goto https://staging.algopilotx.com
+wait 1500
+
+# ENGLISH
+Enter the email and click continue.
+
+# DSL
+expect input[type="email"]
+type input[type="email"] "user@example.com"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+
+# ENGLISH
+Now type the password and log in.
+
+# DSL
+expect input[type="password"]
+type input[type="password"] "mypassword123"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000
+
+# ENGLISH
+Log in using these credentials: email hello@test.com password abc123.
+
+# DSL
+expect input[type="email"]
+type input[type="email"] "hello@test.com"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "abc123"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2500
+
+🟡 BUTTONS & NAVIGATION
+# ENGLISH
+Click the Create new automation button.
+
+# DSL
+expect text("Create new automation")
+click text("Create new automation")
+wait 1500
+
+# ENGLISH
+Open the settings menu.
+
+# DSL
+expect text("Settings")
+click text("Settings")
+wait 1500
+
+# ENGLISH
+Move to the Dashboard page.
+
+# DSL
+goto https://staging.algopilotx.com/dashboard
+wait 2000
+
+# ENGLISH
+Confirm the action.
+
+# DSL
+expect button:has-text("Confirm")
+click button:has-text("Confirm")
+wait 1500
+
+🔵 FORM INPUTS
+# ENGLISH
+Fill the ticker field with NVDA.
+
+# DSL
+expect input[placeholder="Ticker"]
+type input[placeholder="Ticker"] "NVDA"
+wait 500
+
+# ENGLISH
+Enter quantity of 10 shares.
+
+# DSL
+expect input[type="number"]
+type input[type="number"] "10"
+wait 500
+
+# ENGLISH
+Clear the field and type SPY.
+
+# DSL
+click input
+press "Control+A"
+press "Backspace"
+type input "SPY"
+wait 500
+
+🟣 DROPDOWNS
+# ENGLISH
+Select TradingView as the signal source.
+
+# DSL
+select label("Source") "TradingView"
+wait 1000
+
+# ENGLISH
+Choose Stock as the equity type.
+
+# DSL
+select #apx-configure-equity-type-indicator "Stock"
+wait 1000
+
+# ENGLISH
+Set the order side to Buy to open.
+
+# DSL
+select #apx-configure-stock-side "Buy to open"
+wait 1000
+
+🟤 SCROLL / HOVER
+# ENGLISH
+Scroll down the page.
+
+# DSL
+scroll 600
+
+# ENGLISH
+Hover over the account menu.
+
+# DSL
+hover text("Account")
+wait 1000
+
+🔴 COMBINED AUTOMATION CREATION FLOW (FULL)
+# ENGLISH
+Create a new NVDA stock automation setup.
+
+# DSL
+goto https://staging.algopilotx.com
+wait 2000
+expect text("Create new automation")
+click text("Create new automation")
+wait 1500
+select label("Source") "TradingView"
+wait 1000
+expect input[placeholder="Ticker"]
+type input[placeholder="Ticker"] "NVDA"
+wait 500
+select #apx-configure-equity-type-indicator "Stock"
+wait 1000
+select #apx-configure-stock-side "Buy to open"
+wait 1000
+expect input[type="number"]
+type input[type="number"] "10"
+wait 500
+expect button:has-text("Create Automation")
+click button:has-text("Create Automation")
+wait 2000
