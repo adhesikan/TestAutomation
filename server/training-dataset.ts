@@ -41,7 +41,7 @@ type input[type="password"] "abc123"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
-wait 2500`
+wait 3000`
   },
   
   // BUTTONS & NAVIGATION
