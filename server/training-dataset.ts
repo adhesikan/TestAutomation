@@ -94,7 +94,7 @@ wait 500`
   // DROPDOWNS
   {
     english: "Select TradingView as the signal source.",
-    dsl: `select label("Source") "TradingView"
+    dsl: `select :has-text("Source") "TradingView"
 wait 1000`
   },
   {
@@ -127,7 +127,7 @@ wait 2000
 expect text=Create new automation
 click :has-text("Create new automation")
 wait 1500
-select label("Source") "TradingView"
+select :has-text("Source") "TradingView"
 wait 1000
 expect input[placeholder="Ticker"]
 type input[placeholder="Ticker"] "NVDA"
