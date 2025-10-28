@@ -157,6 +157,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/test-runs/detailed', async (req, res) => {
+    try {
+      // Fetch all test runs to ensure accurate totals for the summary and report
+      // Note: For large-scale deployments (>10,000 runs), implement pagination
+      // using query parameters (offset/limit) and server-side filtering/sorting
+      const testRuns = await storage.getAllTestRuns();
+      const tests = await storage.getAllTests();
+      
+      const detailedRuns = testRuns.map(run => {
+        const test = tests.find(t => t.id === run.testId);
+        return {
+          id: run.id,
+          testId: run.testId,
+          testName: test?.name || 'Unknown Test',
+          status: run.status,
+          startedAt: run.startedAt,
+          duration: run.duration,
+        };
+      });
+      
+      res.json(detailedRuns);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get('/api/test-runs/:id', async (req, res) => {
     try {
       const testRun = await storage.getTestRun(req.params.id);

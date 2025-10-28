@@ -1,11 +1,14 @@
 import MetricsCard from "@/components/MetricsCard";
+import TestsSummaryCard from "@/components/TestsSummaryCard";
 import TestResultCard from "@/components/TestResultCard";
 import PassFailChart from "@/components/PassFailChart";
-import { CheckCircle2, XCircle, Clock, Activity } from "lucide-react";
+import TestReportDialog from "@/components/TestReportDialog";
+import { CheckCircle2, Clock, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { TestRun } from "@shared/schema";
+import { useState } from "react";
 
 interface Stats {
   totalTests: number;
@@ -14,7 +17,18 @@ interface Stats {
   avgDuration: string;
 }
 
+interface TestRunWithName {
+  id: string;
+  testId: string;
+  testName: string;
+  status: 'passed' | 'failed' | 'running';
+  startedAt: string;
+  duration: number | null;
+}
+
 export default function Dashboard() {
+  const [showReportDialog, setShowReportDialog] = useState(false);
+
   const { data: stats } = useQuery<Stats>({
     queryKey: ['/api/stats'],
   });
@@ -23,6 +37,15 @@ export default function Dashboard() {
     queryKey: ['/api/test-runs'],
     refetchInterval: 5000,
   });
+
+  const { data: allTestRuns = [] } = useQuery<TestRunWithName[]>({
+    queryKey: ['/api/test-runs/detailed'],
+    refetchInterval: 5000,
+  });
+
+  const totalRuns = allTestRuns.length;
+  const passedRuns = allTestRuns.filter(run => run.status === 'passed').length;
+  const failedRuns = allTestRuns.filter(run => run.status === 'failed').length;
 
   const formatTimestamp = (date: Date | string) => {
     const d = new Date(date);
@@ -72,10 +95,11 @@ export default function Dashboard() {
           value={stats?.passRate ?? '0%'}
           icon={CheckCircle2}
         />
-        <MetricsCard
-          title="Failed Tests"
-          value={stats?.failedTests ?? 0}
-          icon={XCircle}
+        <TestsSummaryCard
+          totalRuns={totalRuns}
+          passed={passedRuns}
+          failed={failedRuns}
+          onClick={() => setShowReportDialog(true)}
         />
         <MetricsCard
           title="Avg Duration"
@@ -110,6 +134,11 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      <TestReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+      />
     </div>
   );
 }
