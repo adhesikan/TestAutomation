@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sparkles, Loader2, HelpCircle, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const AI_DESCRIPTION_STORAGE_KEY = "ai-test-description";
 
 interface AiTestGeneratorProps {
   targetUrl: string;
@@ -18,6 +20,20 @@ export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGenerat
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const { toast } = useToast();
+
+  // Load description from localStorage on mount
+  useEffect(() => {
+    const savedDescription = localStorage.getItem(AI_DESCRIPTION_STORAGE_KEY);
+    if (savedDescription) {
+      setDescription(savedDescription);
+    }
+  }, []);
+
+  // Save description to localStorage whenever it changes
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    localStorage.setItem(AI_DESCRIPTION_STORAGE_KEY, value);
+  };
 
   const handleGenerate = async () => {
     if (!description.trim()) {
@@ -59,7 +75,6 @@ export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGenerat
 
       const data = await response.json();
       onGenerate(data.script);
-      setDescription("");
       
       toast({
         title: "Test generated!",
@@ -195,7 +210,7 @@ export default function AiTestGenerator({ targetUrl, onGenerate }: AiTestGenerat
             placeholder="Example: Click the login button, enter username 'admin' and password 'test123', submit the form, and verify the dashboard page loads"
             className="min-h-32"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
             disabled={isGenerating}
             data-testid="textarea-ai-description"
           />

@@ -62,6 +62,25 @@ Supports a simple command-based scripting language for browser automation: `goto
 - Prevents data loss from accidental clicks outside the modal
 - Applied to both Create Test and Edit Test modals
 
+### October 28, 2025 - AI Description Text Persistence
+
+**Persistent AI Test Description**:
+- User's natural language description in "What do you want to test?" box now persists using localStorage
+- Description is automatically saved whenever user types or updates text
+- Description remains visible even after:
+  - Closing and reopening the Create Test modal
+  - Switching between tabs (AI Generator, Visual Builder, Raw Script)
+  - Generating a test script
+  - Browser refresh
+- Description only clears when user manually deletes the text
+- Storage key: `ai-test-description`
+
+**Technical Implementation**:
+- Added `useEffect` hook to load description from localStorage on component mount
+- Created `handleDescriptionChange` function to update both state and localStorage
+- Removed automatic clearing of description after test generation
+- Text persists across all user sessions until explicitly deleted
+
 ### October 28, 2025 - Text Selector Format Update
 
 **AI DSL Text Selector Format Change**:
