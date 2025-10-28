@@ -149,12 +149,21 @@ These examples will be used to train an AI model that converts plain English to 
 - Password: input[type="password"]
 - Number: input[type="number"]
 - Placeholder: input[placeholder="text"]
-- Button: button:has-text("text")
-- Text elements: text=Label (NO quotes around label)
+- Button (specific): button:has-text("text")
 - Dropdown labels: label("text")
 - ID: #element-id
 
-IMPORTANT: Text selector format is text=Label NOT text("Label")
+CRITICAL CLICK SELECTOR RULES:
+- For clicking text elements (menu items, cards, links, list items): :has-text("text")
+- For clicking specific buttons: button:has-text("text")
+- For expect statements only: text=Label (no quotes)
+
+Examples:
+- click :has-text("Admin") - clicks container with Admin text
+- click :has-text("Settings") - clicks menu/link item
+- click button:has-text("Continue") - clicks button specifically
+- expect text=Dashboard - verifies text (expect only)
+- hover :has-text("Account") - hovers over container
 
 ### Output Format:
 Return ONLY a JSON array with this structure:
