@@ -50,19 +50,21 @@ Selectors should follow these rules:
 - For number inputs, use: input[type="number"]
 - For inputs by placeholder, use: input[placeholder="<text>"]
 - For buttons (when explicitly a button), use: button:has-text("<text>")
-- For dropdown labels in select commands, use: label("<text>")
 - For ID selectors, use: #element-id
+- Only use "select <selector> "<option>"" for actual HTML <select> dropdown elements
 
 CRITICAL CLICK SELECTOR RULES:
-- When clicking on text (labels, menu items, cards, list items, links), use: :has-text("<text>")
+- When clicking on text (labels, menu items, cards, list items, links, strategy items, dropdown-like lists), use: :has-text("<text>")
   This finds the clickable parent container, not just the text node
 - When clicking buttons specifically, use: button:has-text("<text>")
-- For verification/expect statements only, use: text=<text> (no quotes)
+- For verification/expect statements, use: text=<text> (no quotes)
 
 Examples:
   - click :has-text("Admin") - clicks container with "Admin" text
   - click :has-text("Create new automation") - clicks card/div containing this text
   - click :has-text("Settings") - clicks menu item or link with Settings
+  - click :has-text("Publisher-based strategy") - clicks strategy card or list item
+  - click :has-text("Option Fundamentals Demo") - clicks selectable item from list
   - click button:has-text("Continue") - specifically clicks a button
   - expect text=Data Sources - verifies text exists (for expect only)
   - hover :has-text("Account") - hovers over element containing Account
@@ -116,6 +118,10 @@ Generate the DSL steps now:`;
     // Convert hover text= to hover :has-text()
     script = script.replace(/hover\s+text=([^\s\n]+(?:\s+[^\s\n]+)*)/g, 'hover :has-text("$1")');
     
+    // Convert label("...") to :has-text("...") - label() is invalid Playwright syntax
+    script = script.replace(/label\("([^"]+)"\)/g, ':has-text("$1")');
+    script = script.replace(/label\('([^']+)'\)/g, ':has-text("$1")');
+    
     return script;
   } catch (error: any) {
     console.error("AI generation error:", error);
@@ -150,17 +156,18 @@ These examples will be used to train an AI model that converts plain English to 
 - Number: input[type="number"]
 - Placeholder: input[placeholder="text"]
 - Button (specific): button:has-text("text")
-- Dropdown labels: label("text")
 - ID: #element-id
+- Only use "select <selector> "<option>"" for actual HTML <select> dropdown elements
 
 CRITICAL CLICK SELECTOR RULES:
-- For clicking text elements (menu items, cards, links, list items): :has-text("text")
+- For clicking text elements (menu items, cards, links, list items, strategy items, dropdown-like lists): :has-text("text")
 - For clicking specific buttons: button:has-text("text")
-- For expect statements only: text=Label (no quotes)
+- For expect statements: text=Label (no quotes)
 
 Examples:
 - click :has-text("Admin") - clicks container with Admin text
 - click :has-text("Settings") - clicks menu/link item
+- click :has-text("Publisher-based strategy") - clicks strategy card or list item
 - click button:has-text("Continue") - clicks button specifically
 - expect text=Dashboard - verifies text (expect only)
 - hover :has-text("Account") - hovers over container
