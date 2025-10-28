@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Test Script Language
 
-Supports a simple command-based scripting language for browser automation: `click <selector>`, `type <selector> "text"`, `wait <milliseconds>`, `expect <selector>`, `goto <url>`. Includes a Playwright parser to convert Codegen output to this simple format.
+Supports a simple command-based scripting language for browser automation: `goto <url>`, `click <selector>`, `type <selector> "text"`, `select <selector> "option"`, `wait <milliseconds>`, `expect <selector>`. Includes a Playwright parser to convert Codegen output to this simple format.
 
 ## External Dependencies
 
@@ -52,22 +52,36 @@ Supports a simple command-based scripting language for browser automation: `clic
 
 ## Recent Changes
 
+### October 28, 2025 - Enhanced AI-Powered Test Generator
+
+**AI-Powered Test Generator Enhancement**:
+- Updated system prompt with detailed DSL specification and strict output requirements
+- AI now generates clean, comment-free scripts following exact DSL syntax
+- Specific selector rules for common patterns:
+  - Email fields: `input[type="email"]`
+  - Password fields: `input[type="password"]`
+  - Buttons: `button:has-text("Continue")`
+  - Text elements: `text("Login successful")`
+- Includes detailed examples for login flows and form filling
+- Added support for dropdown selection with `select <selector> "option"` command
+- Executor handles both option labels (visible text) and values
+
+**Technical Implementation**:
+- Backend: `server/ai-generator.ts` with comprehensive DSL-focused system prompt
+- System prompt includes syntax rules, selector patterns, and input→output examples
+- Frontend: Support for "Select Dropdown" action in Visual Builder
+- Executor: `test-executor.ts` tries label selection first, falls back to value
+- API: POST `/api/generate-test` endpoint accepting description and targetUrl
+- Works seamlessly with Visual Builder and Raw Script modes
+
 ### October 27, 2025 - AI-Powered Test Generator & Search Engine Blocking
 
-**AI-Powered Test Generator**:
+**Initial AI-Powered Test Generator**:
 - Integrated OpenAI API (gpt-4o-mini) for automatic test script generation from plain English descriptions
 - Users describe what they want to test in natural language, AI generates the complete test script
 - No browser popup or Playwright Codegen needed - completely cloud-based
 - Three creation methods now available: AI Generator, Visual Builder, Raw Script
 - AI Generator is the default tab for new tests
-
-**Technical Implementation**:
-- Backend: `server/ai-generator.ts` with OpenAI integration using `gpt-4o-mini` model
-- API: POST `/api/generate-test` endpoint accepting description and targetUrl
-- Frontend: `AiTestGenerator.tsx` component with textarea and generate button
-- Integration: Added as first tab in `TestConfigForm.tsx` - "AI Generator" (default)
-- System prompt instructs AI to generate scripts in simple format (goto, click, type, wait, expect)
-- Error handling and loading states for user feedback
 
 **User Workflow**:
 1. Create new test and enter test name + target URL

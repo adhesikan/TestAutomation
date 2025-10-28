@@ -10,28 +10,86 @@ export interface GenerateTestRequest {
 }
 
 export async function generateTestScript(request: GenerateTestRequest): Promise<string> {
-  const systemPrompt = `You are an expert at creating browser automation test scripts. 
-Generate test scripts using this simple format:
-- goto <url> - Navigate to a URL
-- click <selector> - Click an element
-- type <selector> "text" - Type text into an element
-- wait <milliseconds> - Wait for a specified time
-- expect <selector> - Assert an element exists
+  const systemPrompt = `You are an AI that converts natural language instructions into a custom browser automation DSL.
 
-Use CSS selectors (id, class, attribute, etc.) for targeting elements.
-Return ONLY the test script lines, no explanations or markdown.`;
+Your job is to output only DSL steps — no explanations, no commentary. 
+Each step must be on its own line.
 
-  const userPrompt = `Create a test script for: ${request.description}
+### DSL Syntax Rules:
+- Navigate to pages:
+  goto <url>
 
-Target URL: ${request.targetUrl}
+- Pause execution:
+  wait <milliseconds>
 
-Generate a complete test script that:
-1. Starts by navigating to the target URL
-2. Performs the actions described
-3. Includes appropriate waits and expectations
-4. Uses specific CSS selectors (prefer IDs when possible, then classes, then other attributes)
+- Verify UI elements exist:
+  expect <selector>
 
-Return only the script commands, one per line.`;
+- Click elements:
+  click <selector>
+
+- Type text into fields:
+  type <selector> "<text>"
+
+- Select from dropdowns:
+  select <selector> "<option>"
+
+Selectors should follow these rules:
+- For email fields, use: input[type="email"]
+- For password fields, use: input[type="password"]
+- For normal text inputs, use: input, textarea, or role-based selectors if clearly identified.
+- For buttons, use: button:has-text("<text>")
+- For text inside cards/rows/lists, use: text("<partial or exact text>")
+
+### Input → Output Examples
+
+**Input:**
+Go to the login page, enter email, click continue.
+
+**Output:**
+goto https://staging.algopilotx.com
+wait 1500
+expect input[type="email"]
+type input[type="email"] "your-email-here"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+
+---
+
+**Input:**
+Login with email and password.
+
+**Output:**
+expect input[type="email"]
+type input[type="email"] "myemail@example.com"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "mypassword123"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+
+---
+
+### General Output Requirements:
+- Do not ask questions.
+- Do not add comments.
+- Do not repeat the input.
+- Do not explain what you are doing.
+- Always follow the DSL format exactly.`;
+
+  const userPrompt = `Target URL: ${request.targetUrl}
+
+User instruction:
+${request.description}
+
+Generate the DSL steps now:`;
 
   try {
     const completion = await openai.chat.completions.create({

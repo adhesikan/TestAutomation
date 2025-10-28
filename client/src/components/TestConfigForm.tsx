@@ -187,7 +187,7 @@ export default function TestConfigForm({ initialConfig, onSave, onCancel }: Test
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription className="text-xs">
-                    Simple format: <code className="bg-muted px-1 rounded">click [selector]</code>, <code className="bg-muted px-1 rounded">type [selector] "text"</code>, <code className="bg-muted px-1 rounded">expect [selector]</code>, <code className="bg-muted px-1 rounded">wait 1000</code>, <code className="bg-muted px-1 rounded">goto [url]</code>
+                    Simple format: <code className="bg-muted px-1 rounded">goto [url]</code>, <code className="bg-muted px-1 rounded">click [selector]</code>, <code className="bg-muted px-1 rounded">type [selector] "text"</code>, <code className="bg-muted px-1 rounded">select [selector] "option"</code>, <code className="bg-muted px-1 rounded">wait 1000</code>, <code className="bg-muted px-1 rounded">expect [selector]</code>
                   </AlertDescription>
                 </Alert>
               </TabsContent>

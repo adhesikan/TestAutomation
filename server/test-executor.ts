@@ -174,6 +174,20 @@ export class TestExecutor extends EventEmitter {
       return;
     }
 
+    const selectMatch = line.match(/^select\s+(.+?)\s+"(.+)"$/i);
+    if (selectMatch) {
+      const selector = selectMatch[1];
+      const option = selectMatch[2];
+      
+      // Try to select by label first (visible text), then fall back to value
+      try {
+        await page.selectOption(selector, { label: option });
+      } catch {
+        await page.selectOption(selector, option);
+      }
+      return;
+    }
+
     throw new Error(`Unknown command: ${line}`);
   }
 

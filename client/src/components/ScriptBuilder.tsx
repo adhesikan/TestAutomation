@@ -14,7 +14,7 @@ import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
 export interface ScriptStep {
   id: string;
-  action: "goto" | "click" | "type" | "wait" | "expect";
+  action: "goto" | "click" | "type" | "wait" | "expect" | "select";
   selector?: string;
   value?: string;
   waitTime?: number;
@@ -64,6 +64,14 @@ function parseScriptToSteps(script: string): ScriptStep[] {
         action: 'expect',
         selector: trimmed.replace('expect ', ''),
       };
+    } else if (trimmed.startsWith('select ')) {
+      const match = trimmed.match(/select ([^\s]+) "(.+)"/);
+      return {
+        id: `step-${index}-${Date.now()}`,
+        action: 'select',
+        selector: match?.[1] || '',
+        value: match?.[2] || '',
+      };
     }
     
     return {
@@ -85,6 +93,8 @@ function stepsToScript(steps: ScriptStep[]): string {
         return `click ${step.selector || ''}`;
       case 'type':
         return `type ${step.selector || ''} "${step.value || ''}"`;
+      case 'select':
+        return `select ${step.selector || ''} "${step.value || ''}"`;
       case 'wait':
         return `wait ${step.waitTime || 1000}`;
       case 'expect':
@@ -235,6 +245,7 @@ export default function ScriptBuilder({ value, onChange }: ScriptBuilderProps) {
                             <SelectItem value="goto">Navigate to URL</SelectItem>
                             <SelectItem value="click">Click Element</SelectItem>
                             <SelectItem value="type">Type Text</SelectItem>
+                            <SelectItem value="select">Select Dropdown</SelectItem>
                             <SelectItem value="wait">Wait</SelectItem>
                             <SelectItem value="expect">Expect Element</SelectItem>
                           </SelectContent>
@@ -304,6 +315,33 @@ export default function ScriptBuilder({ value, onChange }: ScriptBuilderProps) {
                             }
                             placeholder="Text to enter"
                             data-testid={`input-text-${index}`}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {step.action === 'select' && (
+                      <>
+                        <div>
+                          <Label className="text-sm mb-2 block">Selector</Label>
+                          <Input
+                            value={step.selector || ''}
+                            onChange={(e) =>
+                              updateStep(step.id, { selector: e.target.value })
+                            }
+                            placeholder="select[name='country'], #dropdown"
+                            data-testid={`input-selector-${index}`}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm mb-2 block">Option to Select</Label>
+                          <Input
+                            value={step.value || ''}
+                            onChange={(e) =>
+                              updateStep(step.id, { value: e.target.value })
+                            }
+                            placeholder="Option text or value (e.g., 'United States' or 'US')"
+                            data-testid={`input-option-${index}`}
                           />
                         </div>
                       </>
