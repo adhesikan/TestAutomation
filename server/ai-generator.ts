@@ -180,29 +180,55 @@ These examples will be used to train an AI model that converts plain English to 
 - expect <selector>
 - click <selector>
 - type <selector> "<text>"
-- select <selector> "<option>"
+- select <selector> "<option>" (RARE - only for HTML <select> elements)
 - scroll <pixels>
 - hover <selector>
 - press "<key>"
 
-### Selector Rules:
+### CRITICAL: AlgoPilotX-Specific Rules
+
+**LOGIN FLOW** (always use this exact template):
+expect input[type="email"]
+type input[type="email"] "<email>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "<password>"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000
+
+**STRATEGY CARD SELECTION** (always use nth=0):
+expect :has-text("<strategy name>")
+click :has-text("<strategy name>") >> nth=0
+wait 1500
+
+**DROPDOWN MENUS IN ALGOPILOTX**:
+AlgoPilotX dropdowns are custom div-based menus. To select from a dropdown:
+1. Click the dropdown to open: click :has-text("<dropdown label>")
+2. Wait: wait 500
+3. Click the menu item: click :has-text("<menu item text>")
+4. Wait: wait 1000
+
+NEVER use "select <selector> "<option>"" for AlgoPilotX dropdowns.
+
+### General Selector Rules:
 - Email: input[type="email"]
 - Password: input[type="password"]
 - Number: input[type="number"]
 - Placeholder: input[placeholder="text"]
-- Button (specific): button:has-text("text")
+- Buttons: button:has-text("text")
 - ID: #element-id
-- Only use "select <selector> "<option>"" for actual HTML <select> dropdown elements
-
-CRITICAL CLICK SELECTOR RULES:
-- For clicking text elements (menu items, cards, links, list items, strategy items, dropdown-like lists): :has-text("text")
-- For clicking specific buttons: button:has-text("text")
-- For expect statements: text=Label (no quotes)
+- Clickable text: :has-text("text")
+- Verification/expect: text=<text> (no quotes)
 
 Examples:
 - click :has-text("Admin") - clicks container with Admin text
 - click :has-text("Settings") - clicks menu/link item
-- click :has-text("Publisher-based strategy") - clicks strategy card or list item
+- click :has-text("Publisher-based strategy") >> nth=0 - clicks strategy card
 - click button:has-text("Continue") - clicks button specifically
 - expect text=Dashboard - verifies text (expect only)
 - hover :has-text("Account") - hovers over container

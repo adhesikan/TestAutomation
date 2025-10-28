@@ -91,20 +91,40 @@ type input "SPY"
 wait 500`
   },
   
-  // DROPDOWNS
+  // STRATEGY CARD SELECTION (always use nth=0)
   {
-    english: "Select TradingView as the signal source.",
-    dsl: `select :has-text("Source") "TradingView"
+    english: "Select the Publisher-based strategy card.",
+    dsl: `expect :has-text("Publisher-based strategy")
+click :has-text("Publisher-based strategy") >> nth=0
+wait 1500`
+  },
+  {
+    english: "Choose Option Fundamentals Demo strategy.",
+    dsl: `expect :has-text("Option Fundamentals Demo")
+click :has-text("Option Fundamentals Demo") >> nth=0
+wait 1500`
+  },
+  
+  // CUSTOM DROPDOWN MENUS (click to open, click to select)
+  {
+    english: "Select strategy Breakout Signal from the dropdown.",
+    dsl: `click :has-text("Select Strategy")
+wait 500
+click :has-text("Breakout Signal")
 wait 1000`
   },
   {
-    english: "Choose Stock as the equity type.",
-    dsl: `select #apx-configure-equity-type-indicator "Stock"
+    english: "Choose TradingView from the Source dropdown.",
+    dsl: `click :has-text("Source")
+wait 500
+click :has-text("TradingView")
 wait 1000`
   },
   {
-    english: "Set the order side to Buy to open.",
-    dsl: `select #apx-configure-stock-side "Buy to open"
+    english: "Set equity type to Stock.",
+    dsl: `click :has-text("Equity Type")
+wait 500
+click :has-text("Stock")
 wait 1000`
   },
   
@@ -121,20 +141,27 @@ wait 1000`
   
   // COMBINED AUTOMATION CREATION FLOW (FULL)
   {
-    english: "Create a new NVDA stock automation setup.",
+    english: "Create a new NVDA stock automation setup with Publisher-based strategy.",
     dsl: `goto https://staging.algopilotx.com
 wait 2000
 expect text=Create new automation
 click :has-text("Create new automation")
 wait 1500
-select :has-text("Source") "TradingView"
+expect :has-text("Publisher-based strategy")
+click :has-text("Publisher-based strategy") >> nth=0
+wait 1500
+click :has-text("Configure Single Strategy")
+wait 1000
+click :has-text("Select Strategy")
+wait 500
+click :has-text("Breakout Signal")
 wait 1000
 expect input[placeholder="Ticker"]
 type input[placeholder="Ticker"] "NVDA"
 wait 500
-select #apx-configure-equity-type-indicator "Stock"
-wait 1000
-select #apx-configure-stock-side "Buy to open"
+click :has-text("Equity Type")
+wait 500
+click :has-text("Stock")
 wait 1000
 expect input[type="number"]
 type input[type="number"] "10"
@@ -142,6 +169,31 @@ wait 500
 expect button:has-text("Create Automation")
 click button:has-text("Create Automation")
 wait 2000`
+  },
+  
+  // LOGIN AND SELECT STRATEGY
+  {
+    english: "Login and select the Publisher-based strategy card.",
+    dsl: `goto https://app.algopilotx.com
+wait 2000
+expect input[type="email"]
+type input[type="email"] "user@example.com"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000
+expect input[type="password"]
+type input[type="password"] "password123"
+wait 500
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000
+expect text=Create new automation
+click :has-text("Create new automation")
+wait 1500
+expect :has-text("Publisher-based strategy")
+click :has-text("Publisher-based strategy") >> nth=0
+wait 1500`
   }
 ];
 
