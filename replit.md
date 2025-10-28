@@ -81,26 +81,31 @@ Supports a simple command-based scripting language for browser automation: `goto
 - Removed automatic clearing of description after test generation
 - Text persists across all user sessions until explicitly deleted
 
-### October 28, 2025 - Text Selector Format Update
+### October 28, 2025 - Click Selector Fix: :has-text() for Containers
 
-**AI DSL Text Selector Format Change**:
-- Updated text selector format from `text("Label")` to `text=Label`
+**AI DSL Click Selector Format Change**:
+- Updated click selector format from `click text=Label` to `click :has-text("Label")`
+- This fixes the issue where text nodes aren't directly clickable - the parent container is
 - Applied across all training examples and system prompts
 - Examples:
-  - `click text=Admin` (not `click text("Admin")`)
-  - `expect text=Data Sources` (not `expect text("Data Sources")`)
-  - `hover text=System Settings` (not `hover text("System Settings")`)
-- Post-processing added to convert any legacy format automatically
-- Maintains compatibility with other selectors:
-  - `button:has-text("Continue")` - unchanged
-  - `label("Source")` in select commands - unchanged
-  - `input[type="email"]` - unchanged
+  - `click :has-text("Admin")` - clicks the container with "Admin" text
+  - `click :has-text("Create new automation")` - clicks card/div containing this text
+  - `click :has-text("Settings")` - clicks menu item or link
+  - `click button:has-text("Continue")` - specifically for buttons
+  - `expect text=Data Sources` - verification only (unchanged)
+  - `hover :has-text("Account")` - hovers over container
+
+**Why This Change**:
+- Text elements like labels, menu items, cards are typically inside clickable containers
+- `text=Label` tries to click the text node itself (doesn't work)
+- `:has-text("Label")` finds the parent clickable element (works correctly)
 
 **Technical Implementation**:
-- Updated `server/training-dataset.ts` with new format in all examples
-- Updated `server/ai-generator.ts` system prompt with explicit instructions and examples
-- Added post-processing regex to convert legacy `text("...")` to `text=...`
+- Updated `server/ai-generator.ts` system prompt with :has-text() rules and examples
+- Updated `server/training-dataset.ts` with new format in all click/hover examples
+- Added post-processing regex to convert legacy `click text=` to `click :has-text()`
 - Updated dataset enhancement prompt for consistency
+- `expect text=Label` format preserved for verification statements
 
 ### October 28, 2025 - AI User Guide & Training Dataset Integration
 
