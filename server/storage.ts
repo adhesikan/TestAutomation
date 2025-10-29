@@ -5,9 +5,12 @@ import {
   type InsertTestRun,
   type Schedule,
   type InsertSchedule,
+  type UserDataset,
+  type InsertUserDataset,
   tests,
   testRuns,
   schedules,
+  userDatasets,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -35,17 +38,25 @@ export interface IStorage {
   createSchedule(schedule: InsertSchedule): Promise<Schedule>;
   updateSchedule(id: string, schedule: Partial<InsertSchedule>): Promise<Schedule | undefined>;
   deleteSchedule(id: string): Promise<boolean>;
+
+  // User dataset operations
+  getUserDataset(id: string): Promise<UserDataset | undefined>;
+  getAllUserDatasets(): Promise<UserDataset[]>;
+  createUserDataset(dataset: InsertUserDataset): Promise<UserDataset>;
+  deleteUserDataset(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private tests: Map<string, Test>;
   private testRuns: Map<string, TestRun>;
   private schedules: Map<string, Schedule>;
+  private userDatasets: Map<string, UserDataset>;
 
   constructor() {
     this.tests = new Map();
     this.testRuns = new Map();
     this.schedules = new Map();
+    this.userDatasets = new Map();
   }
 
   // Test operations
@@ -159,6 +170,33 @@ export class MemStorage implements IStorage {
 
   async deleteSchedule(id: string): Promise<boolean> {
     return this.schedules.delete(id);
+  }
+
+  // User dataset operations
+  async getUserDataset(id: string): Promise<UserDataset | undefined> {
+    return this.userDatasets.get(id);
+  }
+
+  async getAllUserDatasets(): Promise<UserDataset[]> {
+    return Array.from(this.userDatasets.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createUserDataset(insertDataset: InsertUserDataset): Promise<UserDataset> {
+    const id = randomUUID();
+    const dataset: UserDataset = { 
+      ...insertDataset, 
+      id,
+      createdAt: new Date(),
+      source: insertDataset.source ?? "manual",
+      variables: insertDataset.variables ?? null,
+    };
+    this.userDatasets.set(id, dataset);
+    return dataset;
+  }
+
+  async deleteUserDataset(id: string): Promise<boolean> {
+    return this.userDatasets.delete(id);
   }
 }
 
@@ -276,6 +314,30 @@ export class DbStorage implements IStorage {
 
   async deleteSchedule(id: string): Promise<boolean> {
     const result = await db.delete(schedules).where(eq(schedules.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // User dataset operations
+  async getUserDataset(id: string): Promise<UserDataset | undefined> {
+    const result = await db.select().from(userDatasets).where(eq(userDatasets.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAllUserDatasets(): Promise<UserDataset[]> {
+    return await db.select().from(userDatasets).orderBy(desc(userDatasets.createdAt));
+  }
+
+  async createUserDataset(insertDataset: InsertUserDataset): Promise<UserDataset> {
+    const result = await db.insert(userDatasets).values({ 
+      ...insertDataset,
+      source: insertDataset.source ?? "manual",
+      variables: insertDataset.variables ?? null,
+    }).returning();
+    return result[0];
+  }
+
+  async deleteUserDataset(id: string): Promise<boolean> {
+    const result = await db.delete(userDatasets).where(eq(userDatasets.id, id)).returning();
     return result.length > 0;
   }
 }

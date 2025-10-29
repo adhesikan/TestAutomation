@@ -66,3 +66,35 @@ export const insertScheduleSchema = createInsertSchema(schedules).omit({
 
 export type InsertSchedule = z.infer<typeof insertScheduleSchema>;
 export type Schedule = typeof schedules.$inferSelect;
+
+export const userDatasets = pgTable("user_datasets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  description: text("description").notNull(),
+  steps: json("steps").$type<string[]>().notNull(),
+  variables: json("variables").$type<Record<string, string>>(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  source: text("source").notNull().default("manual"), // 'manual' or 'learning'
+});
+
+export const insertUserDatasetSchema = createInsertSchema(userDatasets).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertUserDataset = z.infer<typeof insertUserDatasetSchema>;
+export type UserDataset = typeof userDatasets.$inferSelect;
+
+// Variable extraction types
+export const extractedVariablesSchema = z.object({
+  email: z.string().email().optional(),
+  password: z.string().optional(),
+  login_url: z.string().url().optional(),
+  strategy_type: z.string().optional(),
+  provider_name: z.string().optional(),
+  ticker: z.string().optional(),
+  signal_type: z.string().optional(),
+  amount: z.string().optional(),
+  other: z.record(z.string()).optional(),
+});
+
+export type ExtractedVariables = z.infer<typeof extractedVariablesSchema>;

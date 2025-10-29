@@ -1,0 +1,99 @@
+I want to update my existing dataset for the UI Test Script Generator so that all values are dynamic and automatically adapt to whichever values the user provides in natural language.
+
+Please do the following:
+
+1. Replace all hardcoded values (emails, passwords, URLs, provider names, strategy names) with placeholders such as:
+   {{login_url}}, {{email}}, {{password}}, {{strategy_type}}, {{provider_name}}
+
+2. Enable automatic variable extraction:
+   - When a user describes their test in plain language, the model should recognize values such as email, password, provider name, strategy type, and automatically substitute them into the script using the placeholders.
+   - For example:
+        User says: "Login as john@abc.com using password Rocket123 and choose Momentum Signals"
+        → The script generator should automatically fill:
+          {{email}} = john@abc.com
+          {{password}} = Rocket123
+          {{provider_name}} = Momentum Signals
+
+3. Append the following GENERIC dataset entries to the current dataset (do not overwrite anything — only append):
+
+[
+  {
+    "description": "Go to the AlgoPilotX login page",
+    "steps": [
+      "goto {{login_url}}",
+      "wait 2000"
+    ]
+  },
+  {
+    "description": "Enter the user's email and click Continue",
+    "steps": [
+      "expect input[type=\"email\"]",
+      "type input[type=\"email\"] \"{{email}}\"",
+      "wait 2000",
+      "expect button:has-text(\"Continue\")",
+      "click button:has-text(\"Continue\")",
+      "wait 2000"
+    ]
+  },
+  {
+    "description": "Enter the user's password and sign in",
+    "steps": [
+      "expect input[type=\"password\"]",
+      "type input[type=\"password\"] \"{{password}}\"",
+      "wait 2000",
+      "expect button:has-text(\"Continue\")",
+      "click button:has-text(\"Continue\")",
+      "wait 3000"
+    ]
+  },
+  {
+    "description": "Begin creating a new automation",
+    "steps": [
+      "expect text=Create new automation",
+      "click :has-text(\"Create new automation\")",
+      "wait 3000",
+      "expect text=\"Select your provider\"",
+      "wait 1000"
+    ]
+  },
+  {
+    "description": "Select a strategy type",
+    "steps": [
+      "expect button:has-text(\"{{strategy_type}}\")",
+      "click button:has-text(\"{{strategy_type}}\")",
+      "wait 2000"
+    ]
+  },
+  {
+    "description": "Select a provider",
+    "steps": [
+      "click :has-text(\"Select Option\")",
+      "wait 500",
+      "click :has-text(\"{{provider_name}}\")",
+      "wait 1000",
+      "expect button:has-text(\"Configure Single Strategy\")",
+      "click button:has-text(\"Configure Single Strategy\")",
+      "wait 2000"
+    ]
+  }
+]
+
+4. Enable **Learning Mode**:
+   - After a script runs successfully, automatically ask:
+     "Would you like to save this test as a reusable dataset example?"
+   - If yes:
+     - Ask for a short description.
+     - Detect and extract variable values (email, password, provider name, URL, etc.)
+     - Save the result into a new section called `"user_contributed"` using the same placeholder pattern.
+
+5. Add Manual Dataset Mode:
+   - If the user types `add dataset`:
+     - Ask them to describe their test in plain English.
+     - Convert it into the same dataset format automatically, using placeholders.
+
+6. Confirm when:
+   ✅ Dataset is appended, not overwritten
+   ✅ Placeholder variable support is active
+   ✅ Automatic variable extraction from user input is enabled
+   ✅ Learning Mode is enabled
+   ✅ Manual dataset contribution is enabled
