@@ -6,14 +6,17 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Test, TestRun } from "@shared/schema";
 import TestStatusBadge from "./TestStatusBadge";
 import { TestStatus } from "./TestStatusBadge";
 import { format } from "date-fns";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, BookMarked } from "lucide-react";
 
 interface TestDetailsDialogProps {
   test: Test;
@@ -22,6 +25,8 @@ interface TestDetailsDialogProps {
 }
 
 export default function TestDetailsDialog({ test, open, onOpenChange }: TestDetailsDialogProps) {
+  const { toast } = useToast();
+  
   const { data: testRuns = [] } = useQuery<TestRun[]>({
     queryKey: ['/api/tests', test.id, 'runs'],
     queryFn: async () => {
@@ -34,6 +39,34 @@ export default function TestDetailsDialog({ test, open, onOpenChange }: TestDeta
   });
 
   const latestRun = testRuns[0];
+
+  const saveAsTrainingMutation = useMutation({
+    mutationFn: async () => {
+      // Split test script into steps array
+      const steps = test.testScript.split('\n').filter(line => line.trim());
+      
+      return apiRequest('/api/datasets', 'POST', {
+        description: test.name,
+        steps,
+        variables: {},
+        source: 'learning',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/datasets'] });
+      toast({
+        title: "Saved to Training Dataset",
+        description: "This test has been added to your training examples and will improve future AI generations.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Save",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -153,6 +186,21 @@ export default function TestDetailsDialog({ test, open, onOpenChange }: TestDeta
                       alt="Test failure screenshot"
                       className="max-w-full border rounded-md"
                     />
+                  </div>
+                )}
+
+                {latestRun.status === 'passed' && (
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => saveAsTrainingMutation.mutate()}
+                      disabled={saveAsTrainingMutation.isPending}
+                      data-testid="button-save-training"
+                    >
+                      <BookMarked className="h-4 w-4 mr-2" />
+                      {saveAsTrainingMutation.isPending ? 'Saving...' : 'Save as Training Example'}
+                    </Button>
                   </div>
                 )}
               </div>

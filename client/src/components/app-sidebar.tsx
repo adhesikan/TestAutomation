@@ -10,7 +10,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, List, Play, Settings, Activity, BookOpen } from "lucide-react";
+import { LayoutDashboard, List, Play, Settings, Activity, BookOpen, Database } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 const menuItems = [
@@ -28,6 +28,11 @@ const menuItems = [
     title: "Test Runner",
     url: "/test-runner",
     icon: Play,
+  },
+  {
+    title: "Training Dataset",
+    url: "/datasets",
+    icon: Database,
   },
   {
     title: "Guide",
