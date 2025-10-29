@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { testExecutor } from "./test-executor";
 import { testScheduler } from "./scheduler";
-import { insertTestSchema, insertScheduleSchema } from "@shared/schema";
+import { insertTestSchema, insertScheduleSchema, insertUserDatasetSchema } from "@shared/schema";
 import { generateTestScript } from "./ai-generator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -315,6 +315,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         failedTests: failedRuns,
         avgDuration: `${avgDuration}s`,
       });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // User dataset routes for learning mode
+  app.get('/api/datasets', async (req, res) => {
+    try {
+      const datasets = await storage.getAllUserDatasets();
+      res.json(datasets);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/datasets', async (req, res) => {
+    try {
+      const validatedData = insertUserDatasetSchema.parse(req.body);
+      const dataset = await storage.createUserDataset(validatedData);
+      res.status(201).json(dataset);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete('/api/datasets/:id', async (req, res) => {
+    try {
+      const deleted = await storage.deleteUserDataset(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Dataset not found' });
+      }
+      res.status(204).send();
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
