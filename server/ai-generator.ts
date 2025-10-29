@@ -1,5 +1,7 @@
 import OpenAI from "openai";
-import { getFewShotExamples } from "./training-dataset";
+import { getFewShotExamples, getFewShotExamplesWithVariables } from "./training-dataset";
+import { extractedVariablesSchema, type ExtractedVariables } from "@shared/schema";
+import { storage } from "./storage";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,7 +12,107 @@ export interface GenerateTestRequest {
   targetUrl: string;
 }
 
+/**
+ * Extract variables from natural language using OpenAI structured outputs
+ */
+async function extractVariables(description: string, targetUrl: string): Promise<ExtractedVariables> {
+  const extractionPrompt = `Extract any automation testing variables from this natural language instruction.
+
+Instruction: "${description}"
+Target URL: "${targetUrl}"
+
+Extract any of the following if mentioned:
+- email: email address
+- password: password value
+- login_url: base URL for the application (use Target URL if not specified)
+- strategy_type: strategy card name (e.g., "Publisher-based strategy", "Option Fundamentals Demo")
+- provider_name: provider or signal source (e.g., "TradingView", "Momentum Signals")
+- ticker: stock ticker symbol (e.g., "NVDA", "SPY", "AAPL")
+- signal_type: specific signal or strategy type (e.g., "Breakout Signal", "Trend Following")
+- amount: quantity or number value (e.g., "10", "100")
+
+Only extract variables that are explicitly mentioned or strongly implied in the instruction.
+Leave fields empty if not found.`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant that extracts variables from test automation instructions. Return a JSON object with the extracted variables."
+        },
+        { 
+          role: "user", 
+          content: extractionPrompt 
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = completion.choices[0].message.content;
+    const parsed = content ? JSON.parse(content) : {};
+    const variables = extractedVariablesSchema.parse(parsed);
+    
+    // Use targetUrl as login_url if not specified
+    if (!variables.login_url && targetUrl) {
+      variables.login_url = targetUrl;
+    }
+
+    return variables;
+  } catch (error) {
+    console.error("Variable extraction error:", error);
+    // Fallback: return basic variables
+    return {
+      login_url: targetUrl,
+    };
+  }
+}
+
+/**
+ * Substitute placeholders in a string with actual values
+ */
+function substitutePlaceholders(text: string, variables: ExtractedVariables): string {
+  let result = text;
+  
+  // Replace all {{placeholder}} with actual values
+  for (const [key, value] of Object.entries(variables)) {
+    if (value && typeof value === 'string') {
+      const placeholder = `{{${key}}}`;
+      result = result.replaceAll(placeholder, value);
+    }
+  }
+  
+  return result;
+}
+
 export async function generateTestScript(request: GenerateTestRequest): Promise<string> {
+  // Step 1: Extract variables from the user's description
+  const variables = await extractVariables(request.description, request.targetUrl);
+  console.log("Extracted variables:", variables);
+
+  // Step 2: Get user-contributed datasets from storage
+  const userDatasets = await storage.getAllUserDatasets();
+  
+  // Step 3: Substitute placeholders in training examples and user datasets
+  const substitutedFewShots = getFewShotExamplesWithVariables(8, variables);
+  const substitutedUserDatasets = userDatasets
+    .slice(0, 3) // Limit to 3 most recent
+    .map(dataset => ({
+      english: dataset.description,
+      dsl: dataset.steps.join('\n')
+    }))
+    .map(example => ({
+      english: substitutePlaceholders(example.english, variables),
+      dsl: substitutePlaceholders(example.dsl, variables)
+    }))
+    .map(ex => `Example:
+Input: "${ex.english}"
+Output:
+${ex.dsl}
+`)
+    .join('\n\n');
+
   const systemPrompt = `You are an AI that converts natural language instructions into a custom browser automation DSL.
 
 Your job is to output only DSL steps — no explanations, no commentary. 
@@ -106,7 +208,9 @@ NEVER use "select <selector> "<option>"" for AlgoPilotX dropdowns.
 
 ### Proven Examples from Training Dataset:
 
-${getFewShotExamples(8)}
+${substitutedFewShots}
+
+${substitutedUserDatasets ? `\n### User-Contributed Examples:\n${substitutedUserDatasets}` : ''}
 
 ### General Output Requirements:
 - Do not ask questions.
@@ -156,6 +260,11 @@ Generate the DSL steps now:`;
     // Convert label("...") to :has-text("...") - label() is invalid Playwright syntax
     script = script.replace(/label\("([^"]+)"\)/g, ':has-text("$1")');
     script = script.replace(/label\('([^']+)'\)/g, ':has-text("$1")');
+    
+    // Step 4: Substitute any remaining placeholders in the generated script
+    script = substitutePlaceholders(script, variables);
+    
+    console.log("Final script with substituted variables:", script);
     
     return script;
   } catch (error: any) {

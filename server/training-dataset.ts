@@ -262,3 +262,29 @@ export function getAllExamples(): string {
     `Example ${i + 1}:\nENGLISH: ${ex.english}\n\nDSL:\n${ex.dsl}`
   ).join('\n\n---\n\n');
 }
+
+/**
+ * Generate few-shot examples with variable substitution
+ */
+export function getFewShotExamplesWithVariables(count: number, variables: any): string {
+  const examples = trainingExamples.slice(0, count);
+  
+  // Substitute placeholders in examples
+  const substitutedExamples = examples.map(ex => {
+    let english = ex.english;
+    let dsl = ex.dsl;
+    
+    // Replace all {{placeholder}} with actual values
+    for (const [key, value] of Object.entries(variables)) {
+      if (value && typeof value === 'string') {
+        const placeholder = `{{${key}}}`;
+        english = english.replaceAll(placeholder, value);
+        dsl = dsl.replaceAll(placeholder, value);
+      }
+    }
+    
+    return { english, dsl };
+  });
+  
+  return substitutedExamples.map(ex => `ENGLISH: ${ex.english}\n\nDSL:\n${ex.dsl}`).join('\n\n---\n\n');
+}
