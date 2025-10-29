@@ -185,11 +185,12 @@ export class MemStorage implements IStorage {
   async createUserDataset(insertDataset: InsertUserDataset): Promise<UserDataset> {
     const id = randomUUID();
     const dataset: UserDataset = { 
-      ...insertDataset, 
       id,
+      description: insertDataset.description,
+      steps: insertDataset.steps as string[],
+      variables: insertDataset.variables ?? null,
       createdAt: new Date(),
       source: insertDataset.source ?? "manual",
-      variables: insertDataset.variables ?? null,
     };
     this.userDatasets.set(id, dataset);
     return dataset;
@@ -328,11 +329,7 @@ export class DbStorage implements IStorage {
   }
 
   async createUserDataset(insertDataset: InsertUserDataset): Promise<UserDataset> {
-    const result = await db.insert(userDatasets).values({ 
-      ...insertDataset,
-      source: insertDataset.source ?? "manual",
-      variables: insertDataset.variables ?? null,
-    }).returning();
+    const result = await db.insert(userDatasets).values(insertDataset as any).returning();
     return result[0];
   }
 

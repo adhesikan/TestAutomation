@@ -7,13 +7,13 @@ export const trainingExamples = [
   // LOGIN / AUTH WORKFLOWS
   {
     english: "Go to the login page and wait for it to load.",
-    dsl: `goto https://staging.algopilotx.com
+    dsl: `goto {{login_url}}
 wait 1500`
   },
   {
     english: "Enter the email and click continue.",
     dsl: `expect input[type="email"]
-type input[type="email"] "user@example.com"
+type input[type="email"] "{{email}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
@@ -22,22 +22,22 @@ wait 2000`
   {
     english: "Now type the password and log in.",
     dsl: `expect input[type="password"]
-type input[type="password"] "mypassword123"
+type input[type="password"] "{{password}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
 wait 3000`
   },
   {
-    english: "Log in using these credentials: email hello@test.com password abc123.",
+    english: "Log in using these credentials: email {{email}} password {{password}}.",
     dsl: `expect input[type="email"]
-type input[type="email"] "hello@test.com"
+type input[type="email"] "{{email}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
 wait 2000
 expect input[type="password"]
-type input[type="password"] "abc123"
+type input[type="password"] "{{password}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
@@ -59,7 +59,7 @@ wait 1500`
   },
   {
     english: "Move to the Dashboard page.",
-    dsl: `goto https://staging.algopilotx.com/dashboard
+    dsl: `goto {{login_url}}/dashboard
 wait 2000`
   },
   {
@@ -71,53 +71,53 @@ wait 1500`
   
   // FORM INPUTS
   {
-    english: "Fill the ticker field with NVDA.",
+    english: "Fill the ticker field with {{ticker}}.",
     dsl: `expect input[placeholder="Ticker"]
-type input[placeholder="Ticker"] "NVDA"
+type input[placeholder="Ticker"] "{{ticker}}"
 wait 500`
   },
   {
-    english: "Enter quantity of 10 shares.",
+    english: "Enter quantity of {{amount}} shares.",
     dsl: `expect input[type="number"]
-type input[type="number"] "10"
+type input[type="number"] "{{amount}}"
 wait 500`
   },
   {
-    english: "Clear the field and type SPY.",
+    english: "Clear the field and type {{ticker}}.",
     dsl: `click input
 press "Control+A"
 press "Backspace"
-type input "SPY"
+type input "{{ticker}}"
 wait 500`
   },
   
   // STRATEGY CARD SELECTION (always use nth=0)
   {
-    english: "Select the Publisher-based strategy card.",
-    dsl: `expect :has-text("Publisher-based strategy")
-click :has-text("Publisher-based strategy") >> nth=0
+    english: "Select the {{strategy_type}} strategy card.",
+    dsl: `expect :has-text("{{strategy_type}}")
+click :has-text("{{strategy_type}}") >> nth=0
 wait 1500`
   },
   {
-    english: "Choose Option Fundamentals Demo strategy.",
-    dsl: `expect :has-text("Option Fundamentals Demo")
-click :has-text("Option Fundamentals Demo") >> nth=0
+    english: "Choose {{strategy_type}} strategy.",
+    dsl: `expect :has-text("{{strategy_type}}")
+click :has-text("{{strategy_type}}") >> nth=0
 wait 1500`
   },
   
   // CUSTOM DROPDOWN MENUS (click to open, click to select)
   {
-    english: "Select strategy Breakout Signal from the dropdown.",
+    english: "Select strategy {{signal_type}} from the dropdown.",
     dsl: `click :has-text("Select Strategy")
 wait 500
-click :has-text("Breakout Signal")
+click :has-text("{{signal_type}}")
 wait 1000`
   },
   {
-    english: "Choose TradingView from the Source dropdown.",
+    english: "Choose {{provider_name}} from the Source dropdown.",
     dsl: `click :has-text("Source")
 wait 500
-click :has-text("TradingView")
+click :has-text("{{provider_name}}")
 wait 1000`
   },
   {
@@ -141,30 +141,30 @@ wait 1000`
   
   // COMBINED AUTOMATION CREATION FLOW (FULL)
   {
-    english: "Create a new NVDA stock automation setup with Publisher-based strategy.",
-    dsl: `goto https://staging.algopilotx.com
+    english: "Create a new {{ticker}} stock automation setup with {{strategy_type}} strategy.",
+    dsl: `goto {{login_url}}
 wait 2000
 expect text=Create new automation
 click :has-text("Create new automation")
 wait 1500
-expect :has-text("Publisher-based strategy")
-click :has-text("Publisher-based strategy") >> nth=0
+expect :has-text("{{strategy_type}}")
+click :has-text("{{strategy_type}}") >> nth=0
 wait 1500
 click :has-text("Configure Single Strategy")
 wait 1000
 click :has-text("Select Strategy")
 wait 500
-click :has-text("Breakout Signal")
+click :has-text("{{signal_type}}")
 wait 1000
 expect input[placeholder="Ticker"]
-type input[placeholder="Ticker"] "NVDA"
+type input[placeholder="Ticker"] "{{ticker}}"
 wait 500
 click :has-text("Equity Type")
 wait 500
 click :has-text("Stock")
 wait 1000
 expect input[type="number"]
-type input[type="number"] "10"
+type input[type="number"] "{{amount}}"
 wait 500
 expect button:has-text("Create Automation")
 click button:has-text("Create Automation")
@@ -173,17 +173,17 @@ wait 2000`
   
   // LOGIN AND SELECT STRATEGY
   {
-    english: "Login and select the Publisher-based strategy card.",
-    dsl: `goto https://app.algopilotx.com
+    english: "Login and select the {{strategy_type}} strategy card.",
+    dsl: `goto {{login_url}}
 wait 2000
 expect input[type="email"]
-type input[type="email"] "user@example.com"
+type input[type="email"] "{{email}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
 wait 2000
 expect input[type="password"]
-type input[type="password"] "password123"
+type input[type="password"] "{{password}}"
 wait 500
 expect button:has-text("Continue")
 click button:has-text("Continue")
@@ -191,9 +191,58 @@ wait 3000
 expect text=Create new automation
 click :has-text("Create new automation")
 wait 1500
-expect :has-text("Publisher-based strategy")
-click :has-text("Publisher-based strategy") >> nth=0
+expect :has-text("{{strategy_type}}")
+click :has-text("{{strategy_type}}") >> nth=0
 wait 1500`
+  },
+
+  // GENERIC WORKFLOW EXAMPLES (USER-CONTRIBUTED)
+  {
+    english: "Go to the AlgoPilotX login page",
+    dsl: `goto {{login_url}}
+wait 2000`
+  },
+  {
+    english: "Enter the user's email and click Continue",
+    dsl: `expect input[type="email"]
+type input[type="email"] "{{email}}"
+wait 2000
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 2000`
+  },
+  {
+    english: "Enter the user's password and sign in",
+    dsl: `expect input[type="password"]
+type input[type="password"] "{{password}}"
+wait 2000
+expect button:has-text("Continue")
+click button:has-text("Continue")
+wait 3000`
+  },
+  {
+    english: "Begin creating a new automation",
+    dsl: `expect text=Create new automation
+click :has-text("Create new automation")
+wait 3000
+expect text=Select your provider
+wait 1000`
+  },
+  {
+    english: "Select a strategy type",
+    dsl: `expect button:has-text("{{strategy_type}}")
+click button:has-text("{{strategy_type}}")
+wait 2000`
+  },
+  {
+    english: "Select a provider",
+    dsl: `click :has-text("Select Option")
+wait 500
+click :has-text("{{provider_name}}")
+wait 1000
+expect button:has-text("Configure Single Strategy")
+click button:has-text("Configure Single Strategy")
+wait 2000`
   }
 ];
 
